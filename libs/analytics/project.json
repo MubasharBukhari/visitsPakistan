@@ -1,0 +1,27 @@
+{
+  "name": "analytics",
+  "sourceRoot": "libs/analytics/src",
+  "projectType": "library",
+  "tags": ["type:domain"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/analytics"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/analytics/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/analytics/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/analytics"]
+    }
+  }
+}

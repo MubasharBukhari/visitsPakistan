@@ -1,0 +1,498 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Platform migration compatibility marker.
+model PlatformMetadata {
+  key   String @id
+  value String
+
+  @@map("platform_metadata")
+}
+
+enum EntityKind {
+  GEO_ENTITY
+  PLACE
+  EXPERIENCE
+  CONTENT_ITEM
+  CUISINE
+  ROUTE
+  PARTNER
+  TRAVEL_PRODUCT
+}
+
+enum PublicationStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum GeoEntityType {
+  COUNTRY
+  REGION
+  PROVINCE_TERRITORY
+  CITY
+  DESTINATION
+  NEIGHBOURHOOD
+}
+
+enum RelationType {
+  HAS_ATTRACTION
+  HAS_EXPERIENCE
+  NEAR
+  PART_OF
+  HAS_CUISINE
+  HAS_ROUTE
+  ABOUT
+  VISITS
+  OPERATES
+}
+
+enum SourceType {
+  OFFICIAL
+  EDITORIAL
+  FIELD_OBSERVATION
+  DATASET
+  DEVELOPMENT_FIXTURE
+}
+
+enum PlaceType {
+  ATTRACTION
+  RESTAURANT
+  HOTEL
+  MARKET
+  VENUE
+  TRANSPORT_POINT
+}
+
+enum ContentType {
+  DESTINATION_EDITORIAL
+  ATTRACTION_EDITORIAL
+  TRAVEL_GUIDE
+  FOOD_GUIDE
+  ROUTE_GUIDE
+  ITINERARY_EDITORIAL
+  TRAVEL_STORY
+  GUIDE
+  STORY
+  COLLECTION
+}
+
+// Shared identity/lifecycle owned through each module's transactional port.
+model EntityRegistry {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind                EntityKind
+  name                String
+  slug                String
+  locale              String                     @default("en")
+  status              PublicationStatus          @default(DRAFT)
+  createdAt           DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime?                  @map("deleted_at") @db.Timestamptz(6)
+  lastVerified        DateTime?                  @map("last_verified") @db.Timestamptz(6)
+  primarySourceId     String?                    @map("primary_source_id") @db.Uuid
+  primarySource       SourceRecord?              @relation("PrimarySource", fields: [primarySourceId], references: [id], onDelete: Restrict)
+  provenance          Json                       @default("{}")
+  geoEntity           GeoEntity?
+  place               Place?
+  experience          Experience?
+  contentItem         ContentItem?               @relation("ContentOwner")
+  editorialReferences EditorialEntityReference[]
+  referencedContent   ContentItem[]              @relation("ContentPrimaryEntity")
+  outgoing            EntityRelation[]           @relation("RelationSource")
+  incoming            EntityRelation[]           @relation("RelationTarget")
+  sources             EntitySource[]
+
+  @@unique([id, kind])
+  @@unique([kind, locale, slug])
+  @@index([status, deletedAt])
+  @@index([primarySourceId])
+  @@index([lastVerified])
+  @@map("entity_registry")
+}
+
+model GeoEntity {
+  id                 String                                @id @db.Uuid
+  kind               EntityKind                            @default(GEO_ENTITY)
+  entity             EntityRegistry                        @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
+  type               GeoEntityType
+  parentId           String?                               @map("parent_id") @db.Uuid
+  parent             GeoEntity?                            @relation("GeoHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children           GeoEntity[]                           @relation("GeoHierarchy")
+  altNames           String[]                              @default([]) @map("alt_names")
+  timezone           String                                @default("Asia/Karachi")
+  location           Unsupported("geography(Point,4326)")?
+  destinationProfile DestinationProfile?
+  places             Place[]
+  experiences        Experience[]
+
+  @@unique([id, kind])
+  @@index([parentId, type])
+  @@index([type])
+  @@map("geo_entity")
+}
+
+model Place {
+  id          String                                @id @db.Uuid
+  kind        EntityKind                            @default(PLACE)
+  entity      EntityRegistry                        @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
+  type        PlaceType
+  geoEntityId String                                @map("geo_entity_id") @db.Uuid
+  geoEntity   GeoEntity                             @relation(fields: [geoEntityId], references: [id], onDelete: Restrict)
+  facts       Json                                  @default("{}")
+  location    Unsupported("geography(Point,4326)")?
+
+  @@unique([id, kind])
+  @@index([geoEntityId, type])
+  @@map("place")
+}
+
+model Experience {
+  id              String         @id @db.Uuid
+  kind            EntityKind     @default(EXPERIENCE)
+  entity          EntityRegistry @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
+  geoEntityId     String?        @map("geo_entity_id") @db.Uuid
+  geoEntity       GeoEntity?     @relation(fields: [geoEntityId], references: [id], onDelete: Restrict)
+  category        String
+  difficulty      String?
+  durationMinutes Int?           @map("duration_minutes")
+  seasons         String[]       @default([])
+  facts           Json           @default("{}")
+
+  @@unique([id, kind])
+  @@index([geoEntityId, category])
+  @@index([category])
+  @@map("experience")
+}
+
+// Reference metadata only; no editorial bodies or CMS workflow implementation.
+model ContentItem {
+  editorial       EditorialDocument?
+  id              String             @id @db.Uuid
+  kind            EntityKind         @default(CONTENT_ITEM)
+  entity          EntityRegistry     @relation("ContentOwner", fields: [id, kind], references: [id, kind], onDelete: Restrict)
+  type            ContentType
+  cmsExternalId   String?            @unique @map("cms_external_id")
+  primaryEntityId String?            @map("primary_entity_id") @db.Uuid
+  primaryEntity   EntityRegistry?    @relation("ContentPrimaryEntity", fields: [primaryEntityId], references: [id], onDelete: Restrict)
+  publishedAt     DateTime?          @map("published_at") @db.Timestamptz(6)
+  metadata        Json               @default("{}")
+
+  @@unique([id, kind])
+  @@index([primaryEntityId])
+  @@map("content_item")
+}
+
+model EntityRelation {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId       String            @map("source_id") @db.Uuid
+  sourceKind     EntityKind        @map("source_kind")
+  source         EntityRegistry    @relation("RelationSource", fields: [sourceId, sourceKind], references: [id, kind], onDelete: Restrict)
+  targetId       String            @map("target_id") @db.Uuid
+  targetKind     EntityKind        @map("target_kind")
+  target         EntityRegistry    @relation("RelationTarget", fields: [targetId, targetKind], references: [id, kind], onDelete: Restrict)
+  type           RelationType
+  weight         Float             @default(1)
+  metadata       Json              @default("{}")
+  status         PublicationStatus @default(DRAFT)
+  sourceRecordId String?           @map("source_record_id") @db.Uuid
+  sourceRecord   SourceRecord?     @relation(fields: [sourceRecordId], references: [id], onDelete: Restrict)
+  lastVerified   DateTime?         @map("last_verified") @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?         @map("deleted_at") @db.Timestamptz(6)
+
+  @@unique([sourceId, type, targetId])
+  @@index([sourceId, type, status, deletedAt])
+  @@index([targetId, type, status, deletedAt])
+  @@index([sourceRecordId])
+  @@map("entity_relation")
+}
+
+model SourceRecord {
+  destinationProfiles DestinationProfile[]
+  editorialSources    EditorialSource[]
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceKey           String               @unique @map("source_key")
+  url                 String?
+  title               String
+  publisher           String
+  accessedAt          DateTime             @map("accessed_at") @db.Timestamptz(6)
+  sourceType          SourceType           @map("source_type")
+  metadata            Json                 @default("{}")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  retiredAt           DateTime?            @map("retired_at") @db.Timestamptz(6)
+  primaryEntities     EntityRegistry[]     @relation("PrimarySource")
+  entitySources       EntitySource[]
+  relations           EntityRelation[]
+
+  @@index([sourceType, accessedAt])
+  @@map("source_record")
+}
+
+model EntitySource {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId     String         @map("entity_id") @db.Uuid
+  entity       EntityRegistry @relation(fields: [entityId], references: [id], onDelete: Restrict)
+  sourceId     String         @map("source_id") @db.Uuid
+  source       SourceRecord   @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  factPath     String         @default("entity") @map("fact_path")
+  confidence   Float?
+  reviewer     String?
+  lastVerified DateTime?      @map("last_verified") @db.Timestamptz(6)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([entityId, sourceId, factPath])
+  @@index([sourceId])
+  @@map("entity_source")
+}
+
+enum EditorialStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+enum StaffRole {
+  CONTRIBUTOR
+  EDITOR
+  ADMINISTRATOR
+}
+
+enum TemplateLayout {
+  EDITORIAL
+  MAGAZINE
+  COMPACT
+}
+
+model StaffAccount {
+  id           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String              @unique
+  displayName  String              @map("display_name")
+  passwordHash String              @map("password_hash")
+  mfaSecret    String              @map("mfa_secret")
+  lastMfaStep  BigInt?             @map("last_mfa_step")
+  roles        StaffRole[]
+  active       Boolean             @default(true)
+  failedLogins Int                 @default(0) @map("failed_logins")
+  lockedUntil  DateTime?           @map("locked_until") @db.Timestamptz(6)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sessions     StaffSession[]
+  authored     EditorialRevision[] @relation("RevisionAuthor")
+  reviewed     EditorialRevision[] @relation("RevisionReviewer")
+  audits       CmsAudit[]
+  media        MediaAsset[]
+
+  @@map("staff_account")
+}
+
+model StaffSession {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash  String       @unique @map("token_hash")
+  staffId    String       @map("staff_id") @db.Uuid
+  staff      StaffAccount @relation(fields: [staffId], references: [id], onDelete: Restrict)
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt  DateTime     @map("expires_at") @db.Timestamptz(6)
+  lastSeenAt DateTime     @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  revokedAt  DateTime?    @map("revoked_at") @db.Timestamptz(6)
+
+  @@index([staffId, expiresAt])
+  @@map("staff_session")
+}
+
+model EditorialDocument {
+  id                  String              @id @db.Uuid
+  contentItem         ContentItem         @relation(fields: [id], references: [id], onDelete: Restrict)
+  version             Int                 @default(1)
+  currentRevisionId   String?             @unique @map("current_revision_id") @db.Uuid
+  currentRevision     EditorialRevision?  @relation("CurrentRevision", fields: [currentRevisionId], references: [id], onDelete: Restrict)
+  publishedRevisionId String?             @unique @map("published_revision_id") @db.Uuid
+  publishedRevision   EditorialRevision?  @relation("PublishedRevision", fields: [publishedRevisionId], references: [id], onDelete: Restrict)
+  revisions           EditorialRevision[] @relation("DocumentRevisions")
+  firstPublishedAt    DateTime?           @map("first_published_at") @db.Timestamptz(6)
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("editorial_document")
+}
+
+model EditorialRevision {
+  id              String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentId      String                     @map("document_id") @db.Uuid
+  document        EditorialDocument          @relation("DocumentRevisions", fields: [documentId], references: [id], onDelete: Restrict)
+  currentOf       EditorialDocument?         @relation("CurrentRevision")
+  publishedOf     EditorialDocument?         @relation("PublishedRevision")
+  number          Int
+  status          EditorialStatus            @default(DRAFT)
+  title           String
+  summary         String
+  seoTitle        String                     @map("seo_title")
+  metaDescription String                     @map("meta_description")
+  blocks          Json
+  authorId        String                     @map("author_id") @db.Uuid
+  author          StaffAccount               @relation("RevisionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  reviewerId      String?                    @map("reviewer_id") @db.Uuid
+  reviewer        StaffAccount?              @relation("RevisionReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  heroMediaId     String?                    @map("hero_media_id") @db.Uuid
+  heroMedia       MediaAsset?                @relation(fields: [heroMediaId], references: [id], onDelete: Restrict)
+  lastVerified    DateTime?                  @map("last_verified") @db.Timestamptz(6)
+  publishedAt     DateTime?                  @map("published_at") @db.Timestamptz(6)
+  createdAt       DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sources         EditorialSource[]
+  references      EditorialEntityReference[]
+
+  @@unique([documentId, number])
+  @@index([status, updatedAt])
+  @@index([authorId])
+  @@index([reviewerId])
+  @@index([heroMediaId])
+  @@map("editorial_revision")
+}
+
+model EditorialSource {
+  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  revisionId String            @map("revision_id") @db.Uuid
+  revision   EditorialRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  sourceId   String            @map("source_id") @db.Uuid
+  source     SourceRecord      @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  @@unique([revisionId, sourceId])
+  @@index([sourceId])
+  @@map("editorial_source")
+}
+
+model EditorialEntityReference {
+  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  revisionId String            @map("revision_id") @db.Uuid
+  revision   EditorialRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  entityId   String            @map("entity_id") @db.Uuid
+  entity     EntityRegistry    @relation(fields: [entityId], references: [id], onDelete: Restrict)
+
+  @@unique([revisionId, entityId])
+  @@index([entityId])
+  @@map("editorial_entity_reference")
+}
+
+model MediaAsset {
+  id           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storageKey   String              @unique @map("storage_key")
+  mime         String              @default("image/webp")
+  width        Int
+  height       Int
+  alt          String
+  credit       String
+  sha256       String
+  uploadedById String              @map("uploaded_by_id") @db.Uuid
+  uploadedBy   StaffAccount        @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt    DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  revisions    EditorialRevision[]
+  themes       SiteTheme[]
+
+  @@map("media_asset")
+}
+
+model SiteTheme {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String             @unique
+  tokens      Json
+  version     Int                @default(1)
+  logoMediaId String?            @map("logo_media_id") @db.Uuid
+  logoMedia   MediaAsset?        @relation(fields: [logoMediaId], references: [id], onDelete: Restrict)
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  settings    SitePresentation[]
+
+  @@map("site_theme")
+}
+
+model SiteTemplate {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  slug          String               @unique
+  layout        TemplateLayout
+  allowedBlocks String[]             @map("allowed_blocks")
+  version       Int                  @default(1)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  assignments   TemplateAssignment[]
+
+  @@map("site_template")
+}
+
+model SitePresentation {
+  id        String    @id @default("website")
+  themeId   String    @map("theme_id") @db.Uuid
+  theme     SiteTheme @relation(fields: [themeId], references: [id], onDelete: Restrict)
+  version   Int       @default(1)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("site_presentation")
+}
+
+model TemplateAssignment {
+  type       ContentType  @id
+  templateId String       @map("template_id") @db.Uuid
+  template   SiteTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  @@map("template_assignment")
+}
+
+model CmsAudit {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId    String       @map("actor_id") @db.Uuid
+  actor      StaffAccount @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  action     String
+  resourceId String       @map("resource_id")
+  metadata   Json         @default("{}")
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([resourceId, createdAt])
+  @@map("cms_audit")
+}
+
+model ContentOutbox {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  event       String
+  resourceId  String    @map("resource_id")
+  revisionId  String?   @map("revision_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  processedAt DateTime? @map("processed_at") @db.Timestamptz(6)
+
+  @@index([processedAt, createdAt])
+  @@map("content_outbox")
+}
+
+// Destinations owns discovery facets; Geography owns identity and coordinates.
+model DestinationProfile {
+  id           String            @id @db.Uuid
+  geography    GeoEntity         @relation(fields: [id], references: [id], onDelete: Restrict)
+  interests    String[]          @default([])
+  seasons      String[]          @default([])
+  sourceId     String            @map("source_id") @db.Uuid
+  source       SourceRecord      @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  status       PublicationStatus @default(DRAFT)
+  lastVerified DateTime?         @map("last_verified") @db.Timestamptz(6)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?         @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([status, deletedAt])
+  @@index([sourceId])
+  @@index([interests], type: Gin)
+  @@index([seasons], type: Gin)
+  @@map("destination_profile")
+}

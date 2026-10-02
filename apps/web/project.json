@@ -1,0 +1,51 @@
+{
+  "name": "web",
+  "sourceRoot": "apps/web/src",
+  "projectType": "application",
+  "tags": ["type:frontend"],
+  "implicitDependencies": ["ui"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/web"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p apps/web/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next build apps/web --webpack",
+        "env": {
+          "NODE_ENV": "production"
+        }
+      },
+      "outputs": ["{workspaceRoot}/apps/web/.next"]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next dev apps/web --port 3000 --hostname 127.0.0.1",
+        "env": {
+          "NODE_ENV": "development"
+        }
+      },
+      "cache": false
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/start-next.mjs web",
+        "env": {
+          "NODE_ENV": "production"
+        }
+      },
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "testing",
+  "sourceRoot": "libs/testing/src",
+  "projectType": "library",
+  "tags": ["type:testing"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/testing"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/testing/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/testing/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/testing"]
+    },
+    "integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --config jest.integration.config.cjs --runInBand"
+      },
+      "cache": false
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=tests/.*frontends"
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tests/**/*.spec.ts",
+        "{workspaceRoot}/apps/web/src/**/*",
+        "{workspaceRoot}/apps/cms/src/app/health/**/*",
+        "{workspaceRoot}/apps/cms/src/app/ready/**/*",
+        "{workspaceRoot}/libs/domain/src/**/*",
+        "{workspaceRoot}/tools/jest-js-transform.cjs"
+      ]
+    }
+  }
+}

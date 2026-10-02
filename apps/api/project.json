@@ -1,0 +1,55 @@
+{
+  "name": "api",
+  "sourceRoot": "apps/api/src",
+  "projectType": "application",
+  "tags": ["type:backend"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/api"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p apps/api/tsconfig.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=apps/api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/build-api.mjs"
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/api"]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx watch apps/api/src/main.ts"
+      },
+      "cache": false
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node dist/apps/api/main.cjs"
+      },
+      "cache": false
+    }
+  },
+  "implicitDependencies": [
+    "database",
+    "cache",
+    "search",
+    "config",
+    "auth",
+    "domain"
+  ]
+}

@@ -1,0 +1,228 @@
+.public-story {
+  background: #faf9f5;
+  color: var(--story-neutral);
+  font-family: var(--story-body), sans-serif;
+  min-height: 100vh;
+}
+.story-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 5vw;
+  border-bottom: 1px solid #e1e6da;
+  background: white;
+}
+.story-header img {
+  width: 230px;
+  height: auto;
+}
+.story-header > span {
+  color: var(--story-primary);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.story-shell {
+  max-width: var(--story-width);
+  margin: auto;
+  padding: 35px 30px 60px;
+}
+.story-shell nav {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #7c8b75;
+  margin-bottom: 45px;
+}
+.story-shell a {
+  color: var(--story-primary);
+}
+.story-title {
+  max-width: 850px;
+  margin: 0 auto 35px;
+  text-align: center;
+}
+.story-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--story-secondary);
+}
+.story-title h1 {
+  font-family: var(--story-heading), serif;
+  font-size: clamp(38px, 6vw, 65px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--story-primary);
+  margin: 20px 0;
+}
+.story-title > p {
+  font-size: 17px;
+  color: #75836e;
+  line-height: 1.8;
+}
+.story-title > div {
+  font-size: 11px;
+  color: #819176;
+}
+.story-hero {
+  margin: 0 0 40px;
+}
+.story-hero img {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  border-radius: var(--story-radius);
+}
+.public-story figcaption {
+  font-size: 10px;
+  color: #85917c;
+  margin-top: 12px;
+}
+.story-body {
+  max-width: 760px;
+  margin: auto;
+}
+.story-body h2,
+.story-body h3,
+.story-sources h2 {
+  font-family: var(--story-heading), serif;
+  font-weight: 500;
+  color: var(--story-primary);
+}
+.story-body h2 {
+  font-size: 32px;
+  margin: 35px 0 20px;
+}
+.story-body h3 {
+  font-size: 24px;
+}
+.story-body p,
+.story-body li {
+  font-size: 15px;
+  line-height: 1.95;
+  color: #5d715a;
+}
+.story-body img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--story-radius);
+}
+.story-note {
+  border-left: 3px solid var(--story-secondary);
+  background: #f4ecde;
+  padding: 24px;
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 28px 0;
+}
+.story-reference {
+  background: #ecf2e7;
+  border: 1px solid #dce6d2;
+  border-radius: var(--story-radius);
+  padding: 25px;
+  margin: 30px 0;
+  font-size: 13px;
+}
+.story-reference span {
+  display: block;
+  font-size: 11px;
+  margin-top: 10px;
+  color: #7a8c6c;
+}
+.story-body blockquote {
+  font-family: var(--story-heading);
+  font-size: 26px;
+  border-left: 3px solid var(--story-primary);
+  padding: 15px 25px;
+}
+.story-body cite {
+  display: block;
+  font-family: var(--story-body);
+  font-size: 12px;
+  margin-top: 10px;
+}
+.story-sources {
+  max-width: 760px;
+  margin: 55px auto 0;
+  border-top: 1px solid #dce5d5;
+  padding-top: 30px;
+}
+.story-sources h2 {
+  font-size: 24px;
+}
+.story-sources p,
+.story-sources li {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #7d8b74;
+}
+.story-footer {
+  padding: 30px;
+  text-align: center;
+  font-size: 11px;
+  background: var(--story-primary);
+  color: white;
+}
+.layout-magazine .story-title {
+  text-align: left;
+  max-width: none;
+  border-left: 4px solid var(--story-secondary);
+  padding-left: 30px;
+}
+.layout-magazine .story-body {
+  max-width: 900px;
+}
+.layout-compact .story-shell {
+  max-width: 980px;
+}
+.layout-compact .story-hero img {
+  height: 300px;
+}
+.layout-compact .story-title h1 {
+  font-size: 42px;
+}
+.layout-compact .story-body h2 {
+  font-size: 27px;
+}
+@media (max-width: 640px) {
+  .story-header {
+    padding: 20px;
+  }
+  .story-header img {
+    width: 185px;
+  }
+  .story-header > span {
+    display: none;
+  }
+  .story-shell {
+    padding: 25px 20px 45px;
+  }
+  .story-shell nav {
+    margin-bottom: 30px;
+    line-height: 1.7;
+  }
+  .story-title > p {
+    font-size: 14px;
+  }
+  .story-hero img {
+    height: 270px;
+  }
+  .story-body h2 {
+    font-size: 28px;
+  }
+  .story-body p,
+  .story-body li {
+    font-size: 14px;
+  }
+  .story-note,
+  .story-reference {
+    padding: 20px;
+  }
+  .layout-compact .story-title h1 {
+    font-size: 35px;
+  }
+  .layout-magazine .story-title {
+    padding-left: 20px;
+  }
+}

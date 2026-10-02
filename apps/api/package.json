@@ -1,0 +1,13 @@
+{
+  "name": "@visitspakistan/api",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@visitspakistan/database": "workspace:*",
+    "@visitspakistan/cache": "workspace:*",
+    "@visitspakistan/search": "workspace:*",
+    "@visitspakistan/config": "workspace:*",
+    "@visitspakistan/auth": "workspace:*",
+    "@visitspakistan/domain": "workspace:*"
+  }
+}

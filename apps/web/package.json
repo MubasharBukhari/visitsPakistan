@@ -1,0 +1,9 @@
+{
+  "name": "@visitspakistan/web",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@visitspakistan/ui": "workspace:*",
+    "@visitspakistan/domain": "workspace:*"
+  }
+}

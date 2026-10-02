@@ -1,0 +1,15 @@
+# Destination vertical implementation plan
+
+Scope: public destination directory and detail API at `/v1/destinations`, Next.js `/destinations` pages, canonical discovery profiles, published editorial composition and automated tests. No partner/product modules or fabricated travel facts.
+
+Canonical discovery profiles reference existing GeoEntity UUIDs of type DESTINATION or CITY (Skardu is a city). Geography owns identity, hierarchy and coordinates; Destinations owns sourced interest/season facets. A profile and its canonical entity must both be published, verified and backed by active non-fixture sources. Draft seed profiles for Hunza/Skardu preserve current canonical fixtures without approving them. Geography publication remains independent of editorial approval.
+
+Use PostgreSQL reads with deterministic ordering, bounded page/pageSize, recursive region containment, exact interest tags and validated seasons. Reject malformed/unknown query keys. Return canonical entity, published destination editorial where available, approved attractions/experiences/restaurant places, independent source metadata and verification dates. Structured route/itinerary/cuisine/product modules remain unimplemented and return empty collections; published route/itinerary/food guides are separate editorial guides. Never label a guide as a canonical route/product. Public DTOs exclude internal provenance, staff credentials and unpublished relations/content.
+
+SSR/no-store keeps withdrawal immediate. Pages include GET filter forms, pagination, cards, source attribution, canonical/OpenGraph metadata, visible/JSON-LD breadcrumbs and TouristDestination structured data using only returned facts. Empty/error/loading/404 states are explicit; API outages must not become false 404s. Query-specific directory URLs are canonicalized to the directory and noindexed to avoid duplicate filter pages. Detail pages are indexable only for eligible records.
+
+Affected modules: Geography relation extension, Destinations domain contracts/database reader, Content public-read composition, NestJS read controller, Next.js server pages and shared rendering helpers. One additive migration preserves existing SQL guards and PostGIS indexes. Record the profile/filter/publication decisions in ADR-0016.
+
+Tests: query parsing and SEO safety unit tests; isolated real PostgreSQL/NestJS integration tests with synthetic Hunza/Skardu records covering ancestor regions, facets, stable pagination, editorial composition, canonical relation publication, fixture/source retirement, soft deletion and 404. Test-only browser fixtures must use the isolated test DB and be withdrawn after verification. Run install, migrations, lint, typecheck, unit/integration tests, build and responsive browser verification. No existing DB reset or automatic approval of development sources.
+
+Open question: the production interest taxonomy and verified season assignments need editorial/data approval. This implementation accepts normalized sourced interest tags and spring/summer/autumn/winter/all-year season tags without inventing suitable seasons for real destinations.

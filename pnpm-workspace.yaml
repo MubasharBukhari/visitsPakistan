@@ -1,0 +1,13 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/engines'
+  - esbuild
+  - nx
+  - prisma
+  - sharp
+
+ignoredBuiltDependencies:
+  - "@scarf/scarf"

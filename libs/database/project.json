@@ -1,0 +1,35 @@
+{
+  "name": "database",
+  "sourceRoot": "libs/database/src",
+  "projectType": "library",
+  "tags": ["type:infrastructure"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/database"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/database/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/database/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/database"],
+      "dependsOn": ["generate"]
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prisma generate"
+      },
+      "cache": false
+    }
+  }
+}

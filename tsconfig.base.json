@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@visitspakistan/domain": ["libs/domain/src/index.ts"],
+      "@visitspakistan/database": ["libs/database/src/index.ts"],
+      "@visitspakistan/search": ["libs/search/src/index.ts"],
+      "@visitspakistan/cache": ["libs/cache/src/index.ts"],
+      "@visitspakistan/auth": ["libs/auth/src/index.ts"],
+      "@visitspakistan/config": ["libs/config/src/index.ts"],
+      "@visitspakistan/ui": ["libs/ui/src/index.tsx"],
+      "@visitspakistan/analytics": ["libs/analytics/src/index.ts"],
+      "@visitspakistan/testing": ["libs/testing/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/.next", "libs/database/src/generated"]
+}

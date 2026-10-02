@@ -1,0 +1,33 @@
+{
+  "name": "config",
+  "sourceRoot": "libs/config/src",
+  "projectType": "library",
+  "tags": ["type:config"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/config"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/config/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/config/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/config"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=libs/config"
+      }
+    }
+  }
+}

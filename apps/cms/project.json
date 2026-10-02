@@ -1,0 +1,51 @@
+{
+  "name": "cms",
+  "sourceRoot": "apps/cms/src",
+  "projectType": "application",
+  "tags": ["type:frontend"],
+  "implicitDependencies": ["ui"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/cms"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p apps/cms/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next build apps/cms --webpack",
+        "env": {
+          "NODE_ENV": "production"
+        }
+      },
+      "outputs": ["{workspaceRoot}/apps/cms/.next"]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next dev apps/cms --port 3001 --hostname 127.0.0.1",
+        "env": {
+          "NODE_ENV": "development"
+        }
+      },
+      "cache": false
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/start-next.mjs cms",
+        "env": {
+          "NODE_ENV": "production"
+        }
+      },
+      "cache": false
+    }
+  }
+}

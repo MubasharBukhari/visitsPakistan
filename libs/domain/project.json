@@ -1,0 +1,33 @@
+{
+  "name": "domain",
+  "sourceRoot": "libs/domain/src",
+  "projectType": "library",
+  "tags": ["type:domain"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/domain"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/domain/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/domain/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/domain"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=libs/domain"
+      }
+    }
+  }
+}

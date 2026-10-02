@@ -1,0 +1,33 @@
+{
+  "name": "auth",
+  "sourceRoot": "libs/auth/src",
+  "projectType": "library",
+  "tags": ["type:domain"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/auth"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/auth/tsconfig.json --noEmit"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/auth/tsconfig.lib.json"
+      },
+      "outputs": ["{workspaceRoot}/dist/libs/auth"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=libs/auth"
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+version: '3.8'
+# Development only. Reuse the existing PostgreSQL/PostGIS container on host port 5433.
+services:
+  redis:
+    image: redis:7.4.7-alpine
+    ports: ['127.0.0.1:6379:6379']
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--maxmemory',
+        '128mb',
+        '--maxmemory-policy',
+        'allkeys-lru',
+      ]
+    volumes: ['redis-data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  opensearch:
+    image: opensearchproject/opensearch:3.3.2
+    ports: ['127.0.0.1:9200:9200']
+    environment:
+      discovery.type: single-node
+      bootstrap.memory_lock: 'true'
+      OPENSEARCH_JAVA_OPTS: '-Xms512m -Xmx512m'
+      DISABLE_INSTALL_DEMO_CONFIG: 'true'
+      DISABLE_SECURITY_PLUGIN: 'true'
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 65536, hard: 65536 }
+    volumes: ['opensearch-data:/usr/share/opensearch/data']
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://localhost:9200/_cluster/health | grep -Eq "green|yellow"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+  api:
+    profiles: ['apps']
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    env_file: .env
+    environment:
+      DB_HOST: host.docker.internal
+      DATABASE_URL: ''
+      API_HOST: 0.0.0.0
+      REDIS_URL: redis://redis:6379
+      OPENSEARCH_URL: http://opensearch:9200
+    volumes: ['cms-media:/workspace/.data/media']
+    extra_hosts: ['host.docker.internal:host-gateway']
+    ports: ['127.0.0.1:4000:4000']
+    depends_on:
+      redis: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+  web:
+    profiles: ['apps']
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    environment:
+      {
+        PORT: '3000',
+        HOSTNAME: 0.0.0.0,
+        API_INTERNAL_URL: 'http://api:4000',
+        SITE_URL: '${SITE_URL:-http://localhost:3000}',
+      }
+    ports: ['127.0.0.1:3000:3000']
+    depends_on: [api]
+  cms:
+    profiles: ['apps']
+    build: { context: ., dockerfile: apps/cms/Dockerfile }
+    environment:
+      { PORT: '3001', HOSTNAME: 0.0.0.0, API_INTERNAL_URL: 'http://api:4000' }
+    ports: ['127.0.0.1:3001:3001']
+    depends_on: [api]
+volumes:
+  redis-data:
+  opensearch-data:
+  cms-media:
