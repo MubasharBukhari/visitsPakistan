@@ -20,10 +20,7 @@ background jobs through Redis-backed queues when needed.
 
 ## CMS
 
-Custom CMS with a Next.js admin presentation in `apps/cms`. Future editorial
-commands/revisions are owned by the NestJS Content module, separately from
-canonical travel entities. Sprint 0 exposes an inert shell only; no Strapi
-runtime or second CMS backend is deployed. See [ADR-0012](../adr/0012-sprint-0-platform.md).
+Custom CMS with a Next.js admin presentation in `apps/cms`. Editorial commands/revisions and staff workflow are implemented in the NestJS Content module, separately from canonical travel entities. Destination presentation is revision-owned and links canonical geography IDs; no Strapi runtime or second CMS backend is deployed. See [ADR-0012](../adr/0012-sprint-0-platform.md), [ADR-0015](../adr/0015-editorial-cms-workflow.md) and [ADR-0017](../adr/0017-sprint-1-destination-editorial-geography.md).
 
 ## Data and Search
 
@@ -67,3 +64,7 @@ limits; audit logs.
 Vertically scale the Hetzner server first; move media to S3/CDN only when authorized,
 database/search/cache to dedicated infrastructure as justified, and only
 then extract high-value modules into services.
+
+## Sprint 2 implemented discovery boundary
+
+[ADR-0018](../adr/0018-attraction-experience-discovery.md) and [discovery setup/contracts](../development/discovery.md) describe the additive canonical Place/Experience fields, approved graph traversal, publication gates, custom CMS EXPERIENCE_EDITORIAL family and SSR public pages. PostgreSQL/PostGIS supplies filtering and symmetric explicitly sourced NEAR distances. Commercial products, OpenSearch and AI remain outside this sprint.

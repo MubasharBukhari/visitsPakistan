@@ -29,6 +29,7 @@ async function preview() {
     },
     [createDatabaseProbe(url.toString(), base.DEPENDENCY_TIMEOUT_MS)],
     false,
+    false, // The preview must finish fixture cleanup before process termination.
   );
   let closing = false;
   async function cleanup() {

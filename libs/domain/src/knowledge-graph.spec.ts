@@ -138,3 +138,33 @@ test('bounds proximity queries and delegates valid coordinates in longitude/lati
   service.nearbyPlaces(query);
   expect(repo.nearbyPlaces).toHaveBeenCalledWith(query);
 });
+
+test('attraction facts reject invalid duration and season before persistence, while unknown facts remain optional', () => {
+  const repo = repository();
+  const service = new KnowledgeGraphService(repo);
+  const place = {
+    id: a,
+    name: 'Lake',
+    slug: 'lake',
+    geoEntityId: b,
+    type: 'NATURAL_ATTRACTION' as const,
+  };
+  expect(() =>
+    service.createPlace({ ...place, durationMinutes: 10081 }),
+  ).toThrow('duration');
+  expect(() => service.createPlace({ ...place, seasons: ['monsoon'] })).toThrow(
+    'season',
+  );
+  expect(() =>
+    service.createExperience({
+      id: a,
+      name: 'Walk',
+      slug: 'walk',
+      category: 'walking',
+      seasons: ['made-up'],
+    }),
+  ).toThrow('season');
+  expect(repo.createPlace).not.toHaveBeenCalled();
+  service.createPlace(place);
+  expect(repo.createPlace).toHaveBeenCalledWith(place);
+});

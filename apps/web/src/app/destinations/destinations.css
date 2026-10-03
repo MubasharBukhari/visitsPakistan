@@ -871,3 +871,40 @@
 .destination-card h2 .destination-link-pending {
   font-size: 10px;
 }
+
+.destination-editorial-text {
+  white-space: pre-line;
+}
+.destination-quick-answer {
+  margin-bottom: 2rem;
+}
+.destination-prose details {
+  padding: 1rem 0;
+  border-bottom: 1px solid #dce4dd;
+}
+.destination-prose summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.discovery-filters {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 1rem;
+}
+.discovery-filters label {
+  flex: 1 1 140px;
+}
+.discovery-filters input {
+  padding: 0.75rem;
+  width: 100%;
+  border: 1px solid #dce4dd;
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+}
+.destination-entity-grid a {
+  color: var(--destination-primary);
+}
+.destination-facts dd {
+  overflow-wrap: anywhere;
+}

@@ -11,7 +11,7 @@ export class DestinationApiError extends Error {
 }
 async function read<T>(path: string): Promise<T | null> {
   const response = await fetch(
-    `${process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:4000'}/v1/destinations${path}`,
+    `${process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:4000'}/api/v1/destinations${path}`,
     { cache: 'no-store', signal: AbortSignal.timeout(8000) },
   );
   if (response.status === 404) return null;

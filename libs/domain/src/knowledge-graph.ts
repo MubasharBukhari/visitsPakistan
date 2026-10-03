@@ -52,21 +52,46 @@ export interface GeoInput extends EntityIdentity {
   type: GeoType;
   parentId?: string;
   coordinates?: Coordinates;
+  summary?: string;
   altNames?: string[];
   timezone?: string;
 }
+export const placeTypes = [
+  'ATTRACTION',
+  'RESTAURANT',
+  'HOTEL',
+  'MARKET',
+  'VENUE',
+  'TRANSPORT_POINT',
+  'LANDMARK',
+  'NATURAL_ATTRACTION',
+] as const;
+export type PlaceType = (typeof placeTypes)[number];
+export const attractionTypes: readonly PlaceType[] = [
+  'ATTRACTION',
+  'LANDMARK',
+  'NATURAL_ATTRACTION',
+];
 export interface PlaceInput extends EntityIdentity {
-  type:
-    | 'ATTRACTION'
-    | 'RESTAURANT'
-    | 'HOTEL'
-    | 'MARKET'
-    | 'VENUE'
-    | 'TRANSPORT_POINT';
+  type: PlaceType;
   geoEntityId: string;
   coordinates?: Coordinates;
+  altNames?: string[];
+  summary?: string;
+  category?: string;
+  openingInformation?: string;
+  admissionInformation?: string;
+  durationMinutes?: number;
+  bestTime?: string;
+  seasons?: string[];
+  familySuitable?: boolean;
+  accessibility?: string;
+  facilities?: string[];
 }
 export interface ExperienceInput extends EntityIdentity {
+  altNames?: string[];
+  summary?: string;
+  familySuitable?: boolean;
   category: string;
   geoEntityId?: string;
   difficulty?: string;
@@ -223,8 +248,22 @@ export class KnowledgeGraphService {
   createPlace(input: PlaceInput) {
     validateIdentity(input);
     validateUuid(input.geoEntityId);
+    if (!placeTypes.includes(input.type)) throw new Error('Invalid place type');
+    if (
+      input.durationMinutes !== undefined &&
+      (!Number.isInteger(input.durationMinutes) ||
+        input.durationMinutes < 1 ||
+        input.durationMinutes > 10080)
+    )
+      throw new Error('Invalid recommended duration');
+    validateSeasons(input.seasons?.map((s) => s.toLowerCase()));
     if (input.coordinates) validateCoordinates(input.coordinates);
-    return this.repository.createPlace(input);
+    return this.repository.createPlace({
+      ...input,
+      ...(input.seasons
+        ? { seasons: input.seasons.map((s) => s.toLowerCase()) }
+        : {}),
+    });
   }
   createExperience(input: ExperienceInput) {
     validateIdentity(input);
@@ -233,10 +272,17 @@ export class KnowledgeGraphService {
       !input.category.trim() ||
       (input.durationMinutes !== undefined &&
         (!Number.isInteger(input.durationMinutes) ||
-          input.durationMinutes <= 0))
+          input.durationMinutes <= 0 ||
+          input.durationMinutes > 10080))
     )
       throw new Error('Invalid experience category/duration');
-    return this.repository.createExperience(input);
+    validateSeasons(input.seasons?.map((s) => s.toLowerCase()));
+    return this.repository.createExperience({
+      ...input,
+      ...(input.seasons
+        ? { seasons: input.seasons.map((s) => s.toLowerCase()) }
+        : {}),
+    });
   }
   createContent(input: ContentInput) {
     validateIdentity(input);
@@ -268,4 +314,14 @@ export class KnowledgeGraphService {
     validateUuid(id);
     return this.repository.relationsFor(id);
   }
+}
+
+function validateSeasons(seasons?: string[]) {
+  if (
+    seasons?.some(
+      (season) =>
+        !['spring', 'summer', 'autumn', 'winter', 'all-year'].includes(season),
+    )
+  )
+    throw new Error('Invalid season tag');
 }

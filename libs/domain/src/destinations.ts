@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ContentBlock } from './editorial';
+import type { ContentBlock, DestinationPresentation } from './editorial';
 export const destinationSeasons = [
   'spring',
   'summer',
@@ -64,6 +64,7 @@ export interface DestinationEditorial {
   seoTitle: string;
   metaDescription: string;
   blocks: ContentBlock[];
+  destination: DestinationPresentation | null;
   author: { displayName: string };
   reviewer: { displayName: string } | null;
   firstPublished: string | null;
@@ -99,6 +100,14 @@ export interface DestinationCard {
     locale: string;
     timezone: string;
     alt_names: string[];
+    parent_id: string | null;
+    summary: string | null;
+    status: 'PUBLISHED';
+    created_at: string;
+    updated_at: string;
+    latitude: number | null;
+    longitude: number | null;
+    geometry: { type: 'Point'; coordinates: [number, number] } | null;
     coordinates: { latitude: number; longitude: number } | null;
   };
   interests: string[];
@@ -109,7 +118,15 @@ export interface DestinationCard {
   sources: PublicSource[];
   last_verified: string;
 }
+export interface PublicGeography extends PublicEntity {
+  type: string;
+  summary: string | null;
+  destination_slug: string | null;
+}
 export interface DestinationDetail extends DestinationCard {
+  geographic_parent: PublicGeography | null;
+  geographic_children: PublicGeography[];
+  related_destinations: DestinationCard[];
   attractions: PublicEntity[];
   experiences: PublicEntity[];
   food: PublicEntity[];

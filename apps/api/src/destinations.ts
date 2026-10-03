@@ -9,7 +9,7 @@ const localeSchema = z
   .regex(/^[a-z]{2}(-[A-Z]{2})?$/)
   .default('en');
 @ApiTags('destinations')
-@Controller('v1/destinations')
+@Controller(['api/v1/destinations', 'v1/destinations'])
 class DestinationController {
   constructor(@Inject(READER) private readonly reader: DestinationReader) {}
   @Get()

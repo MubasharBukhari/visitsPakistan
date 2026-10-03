@@ -1,5 +1,7 @@
 import {
   destinationQuerySchema,
+  attractionTypes,
+  destinationPresentationSchema,
   EditorialError,
   type DestinationQuery,
   type DestinationDirectory,
@@ -68,6 +70,18 @@ const publicWhere = {
     sourceType: { not: 'DEVELOPMENT_FIXTURE' },
   },
 } as const;
+const publicConceptWhere = {
+  ...publicWhere,
+  OR: [
+    { kind: 'PLACE', place: { geoEntity: { entity: publicWhere } } },
+    {
+      kind: 'EXPERIENCE',
+      experience: {
+        OR: [{ geoEntityId: null }, { geoEntity: { entity: publicWhere } }],
+      },
+    },
+  ],
+} satisfies Prisma.EntityRegistryWhereInput;
 export class DestinationReader {
   private readonly content: EditorialStore;
   constructor(private readonly db: PrismaClient) {
@@ -153,6 +167,9 @@ export class DestinationReader {
           summary: r.summary,
           seoTitle: r.seoTitle,
           metaDescription: r.metaDescription,
+          destination: r.destination
+            ? destinationPresentationSchema.parse(r.destination)
+            : null,
           blocks: r.blocks as unknown as DestinationEditorial['blocks'],
           author: r.author,
           reviewer: r.reviewer,
@@ -230,6 +247,22 @@ export class DestinationReader {
         locale: e.locale,
         timezone: p.geography.timezone,
         alt_names: p.geography.altNames,
+        parent_id: p.geography.parentId,
+        summary: p.geography.summary,
+        status: 'PUBLISHED',
+        created_at: e.createdAt.toISOString(),
+        updated_at: e.updatedAt.toISOString(),
+        latitude: coordinates[0]?.coordinates?.latitude ?? null,
+        longitude: coordinates[0]?.coordinates?.longitude ?? null,
+        geometry: coordinates[0]?.coordinates
+          ? {
+              type: 'Point',
+              coordinates: [
+                coordinates[0].coordinates.longitude,
+                coordinates[0].coordinates.latitude,
+              ],
+            }
+          : null,
         coordinates: coordinates[0]?.coordinates ?? null,
       },
       interests: p.interests,
@@ -260,6 +293,53 @@ export class DestinationReader {
         if (!ids[0]) throw new EditorialError(404, 'Destination not found');
         const id = ids[0].id;
         const card = await this.card(tx, id);
+        const geo = await tx.geoEntity.findUniqueOrThrow({
+          where: { id },
+          select: { parentId: true },
+        });
+        const [parent, children, siblings] = await Promise.all([
+          geo.parentId
+            ? tx.geoEntity.findFirst({
+                where: { id: geo.parentId, entity: { locale, ...publicWhere } },
+                include: {
+                  entity: {
+                    include: { primarySource: { select: sourceSelect } },
+                  },
+                },
+              })
+            : null,
+          tx.geoEntity.findMany({
+            where: { parentId: id, entity: { locale, ...publicWhere } },
+            include: {
+              entity: { include: { primarySource: { select: sourceSelect } } },
+            },
+            orderBy: [{ entity: { name: 'asc' } }, { id: 'asc' }],
+            take: 48,
+          }),
+          geo.parentId
+            ? tx.$queryRaw<Array<{ id: string }>>(
+                Prisma.sql`${eligible} SELECT p.id FROM eligible p JOIN geo_entity g ON g.id=p.id WHERE g.parent_id=${geo.parentId}::uuid AND p.id<>${id}::uuid AND p.locale=${locale} ORDER BY p.name COLLATE "C",p.id LIMIT 6`,
+              )
+            : [],
+        ]);
+        const geographyIds = [
+          ...children.map((g) => g.id),
+          ...(parent ? [parent.id] : []),
+        ];
+        const linked = geographyIds.length
+          ? await tx.$queryRaw<Array<{ id: string; slug: string }>>(
+              Prisma.sql`${eligible} SELECT id,slug FROM eligible WHERE id IN (${Prisma.join(geographyIds.map((v) => Prisma.sql`${v}::uuid`))}) AND locale=${locale}`,
+            )
+          : [];
+        const geographyDTO = (g: NonNullable<typeof parent>) => ({
+          ...publicEntity(g.entity),
+          type: g.type,
+          summary: g.summary,
+          destination_slug: linked.find((d) => d.id === g.id)?.slug ?? null,
+        });
+        const related = await Promise.all(
+          siblings.map((s) => this.card(tx, s.id)),
+        );
         const edges = await tx.entityRelation.findMany({
           where: {
             sourceId: id,
@@ -271,7 +351,7 @@ export class DestinationReader {
               retiredAt: null,
               sourceType: { not: 'DEVELOPMENT_FIXTURE' },
             },
-            target: { locale, ...publicWhere },
+            target: { locale, ...publicConceptWhere },
           },
           include: {
             target: {
@@ -288,7 +368,8 @@ export class DestinationReader {
           .filter(
             (r) =>
               r.type === 'HAS_ATTRACTION' &&
-              r.target.place?.type === 'ATTRACTION',
+              !!r.target.place &&
+              attractionTypes.includes(r.target.place.type),
           )
           .map((r) => publicEntity(r.target));
         const nested = await tx.entityRelation.findMany({
@@ -302,7 +383,7 @@ export class DestinationReader {
               retiredAt: null,
               sourceType: { not: 'DEVELOPMENT_FIXTURE' },
             },
-            target: { locale, ...publicWhere },
+            target: { locale, ...publicConceptWhere },
           },
           include: {
             target: { include: { primarySource: { select: sourceSelect } } },
@@ -333,10 +414,15 @@ export class DestinationReader {
         const content = await this.editorial(tx, id, locale);
         return {
           ...card,
+          geographic_parent: parent ? geographyDTO(parent) : null,
+          geographic_children: children.map(geographyDTO),
+          related_destinations: related,
           sources: [
             ...new Map(
               [
                 ...card.sources,
+                ...(parent ? publicEntity(parent.entity).sources : []),
+                ...children.flatMap((g) => publicEntity(g.entity).sources),
                 ...attractions.flatMap((a) => a.sources),
                 ...experiences.flatMap((a) => a.sources),
                 ...restaurants.flatMap((p) => publicEntity(p.entity).sources),

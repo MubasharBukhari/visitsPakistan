@@ -2,6 +2,7 @@ import { z } from 'zod';
 export const editorialTypes = [
   'DESTINATION_EDITORIAL',
   'ATTRACTION_EDITORIAL',
+  'EXPERIENCE_EDITORIAL',
   'TRAVEL_GUIDE',
   'FOOD_GUIDE',
   'ROUTE_GUIDE',
@@ -13,6 +14,7 @@ export type EditorialType = (typeof editorialTypes)[number];
 export const typeLabels: Record<EditorialType, string> = {
   DESTINATION_EDITORIAL: 'Destination editorial',
   ATTRACTION_EDITORIAL: 'Attraction editorial',
+  EXPERIENCE_EDITORIAL: 'Experience editorial',
   TRAVEL_GUIDE: 'Travel guide',
   FOOD_GUIDE: 'Food guide',
   ROUTE_GUIDE: 'Route guide',
@@ -73,6 +75,28 @@ export const blockTypes = [
   'image',
   'entity_reference',
 ] as const;
+export const destinationPresentationSchema = z
+  .object({
+    quickAnswer: z.string().trim().max(1000),
+    overview: z.string().trim().max(10000),
+    whyVisit: z.string().trim().max(10000),
+    bestTime: z.string().trim().max(5000),
+    travelTips: z.array(z.string().trim().min(1).max(2000)).max(30),
+    faq: z
+      .array(
+        z
+          .object({
+            question: z.string().trim().min(1).max(300),
+            answer: z.string().trim().min(1).max(3000),
+          })
+          .strict(),
+      )
+      .max(30),
+  })
+  .strict();
+export type DestinationPresentation = z.infer<
+  typeof destinationPresentationSchema
+>;
 export const editorialBodySchema = z
   .object({
     title: z.string().trim().min(3).max(180),
@@ -80,6 +104,7 @@ export const editorialBodySchema = z
     seoTitle: z.string().max(70),
     metaDescription: z.string().max(180),
     blocks: z.array(blockSchema).max(100),
+    destination: destinationPresentationSchema.nullable().optional(),
     sourceIds: z.array(uuid).max(30),
     canonicalIds: z.array(uuid).max(40),
     heroMediaId: uuid.nullable(),

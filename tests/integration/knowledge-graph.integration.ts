@@ -6,7 +6,12 @@ import {
 } from '@visitspakistan/database';
 import { KnowledgeGraphService, geoTypes } from '@visitspakistan/domain';
 import { databaseUrl, parseServerConfig } from '@visitspakistan/config';
-import { seedKnowledgeGraph, seedId } from '../../libs/database/src/seed';
+import {
+  seedKnowledgeGraph,
+  seedId,
+  seedGeography,
+  seedDestinationProfiles,
+} from '../../libs/database/src/seed';
 import type { Prisma } from '../../libs/database/src/generated/client';
 const config = parseServerConfig(process.env);
 const name = process.env.DB_TEST_NAME;
@@ -388,6 +393,9 @@ test('seed is idempotent, sourced, draft-only and preserves edited entities', as
     },
   });
   expect(before).toBe(7);
+  const relationCount = await client.entityRelation.count({
+    where: { sourceRecordId: seedId(900) },
+  });
   const original = await client.entityRegistry.findUniqueOrThrow({
     where: { id: seedId(22) },
   });
@@ -437,7 +445,7 @@ test('seed is idempotent, sourced, draft-only and preserves edited entities', as
     await client.entityRelation.count({
       where: { sourceRecordId: original.primarySourceId! },
     }),
-  ).toBe(17);
+  ).toBe(relationCount);
 });
 
 test('verification uses wall clock within a transaction and fact-level sources round-trip', async () => {
@@ -514,4 +522,57 @@ test('controlled migration creates both WGS84 GiST proximity indexes', async () 
   expect(
     indexes.every((i) => i.indexdef.includes('USING gist (location)')),
   ).toBe(true);
+});
+
+test('Sprint 1 representative geography and destination profiles are idempotent unverified drafts', async () => {
+  await seedKnowledgeGraph(client);
+  await seedDestinationProfiles(client);
+  await seedDestinationProfiles(client);
+  const rows = await client.geoEntity.findMany({
+    where: { id: { in: seedGeography.map((g) => g.id) } },
+    include: { entity: true, destinationProfile: true },
+  });
+  expect(rows).toHaveLength(18);
+  expect(
+    rows
+      .filter((g) => g.type === 'PROVINCE_TERRITORY')
+      .map((g) => g.entity.name)
+      .sort(),
+  ).toEqual([
+    'Azad Jammu & Kashmir',
+    'Balochistan',
+    'Gilgit-Baltistan',
+    'Islamabad Capital Territory',
+    'Khyber Pakhtunkhwa',
+    'Punjab',
+    'Sindh',
+  ]);
+  expect(
+    rows
+      .filter((g) => g.destinationProfile)
+      .map((g) => g.entity.slug)
+      .sort(),
+  ).toEqual([
+    'chitral',
+    'hunza',
+    'islamabad',
+    'karachi',
+    'lahore',
+    'murree',
+    'naran-kaghan',
+    'skardu',
+    'swat',
+  ]);
+  for (const row of rows) {
+    const input = seedGeography.find((g) => g.id === row.id)!;
+    expect(row.parentId).toBe(input.parentId ?? null);
+    expect(row.entity.status).toBe('DRAFT');
+    expect(row.entity.lastVerified).toBeNull();
+    if (row.destinationProfile)
+      expect(row.destinationProfile).toMatchObject({
+        status: 'DRAFT',
+        interests: [],
+        seasons: [],
+      });
+  }
 });

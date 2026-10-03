@@ -92,6 +92,63 @@ export const seedGeography: GeoInput[] = [
     parentId: seedId(10),
     coordinates: { latitude: 24.8607, longitude: 67.0011 },
   },
+  {
+    id: seedId(12),
+    name: 'Khyber Pakhtunkhwa',
+    slug: 'khyber-pakhtunkhwa',
+    type: 'PROVINCE_TERRITORY',
+    parentId: seedId(1),
+  },
+  {
+    id: seedId(13),
+    name: 'Balochistan',
+    slug: 'balochistan',
+    type: 'PROVINCE_TERRITORY',
+    parentId: seedId(1),
+  },
+  {
+    id: seedId(14),
+    name: 'Azad Jammu & Kashmir',
+    slug: 'azad-jammu-kashmir',
+    type: 'PROVINCE_TERRITORY',
+    parentId: seedId(1),
+    altNames: ['AJK', 'Azad Kashmir'],
+  },
+  {
+    id: seedId(15),
+    name: 'Swat',
+    slug: 'swat',
+    type: 'DESTINATION',
+    parentId: seedId(12),
+    coordinates: { latitude: 35.2227, longitude: 72.4258 },
+  },
+  {
+    id: seedId(16),
+    name: 'Chitral',
+    slug: 'chitral',
+    type: 'CITY',
+    parentId: seedId(12),
+    coordinates: { latitude: 35.8518, longitude: 71.7864 },
+  },
+  {
+    id: seedId(17),
+    name: 'Naran / Kaghan',
+    slug: 'naran-kaghan',
+    type: 'DESTINATION',
+    parentId: seedId(12),
+    altNames: ['Naran', 'Kaghan Valley'],
+    summary:
+      'Development discovery-area grouping; geographic extent and naming require review.',
+    coordinates: { latitude: 34.9042, longitude: 73.648 },
+  },
+  {
+    id: seedId(18),
+    name: 'Murree',
+    slug: 'murree',
+    type: 'CITY',
+    parentId: seedId(8),
+    coordinates: { latitude: 33.907, longitude: 73.3943 },
+  },
 ];
 /** Idempotent insert-only fixtures: never overwrite names/status/coordinates edited by users. */
 export async function seedKnowledgeGraph(client: PrismaClient): Promise<void> {
@@ -227,5 +284,20 @@ export async function seedKnowledgeGraph(client: PrismaClient): Promise<void> {
       });
       if (!exists) await service.createRelation(relation);
     }
+  });
+}
+
+/** Insert-only profiles share canonical geography identity; no season claims are seeded. */
+export async function seedDestinationProfiles(client: PrismaClient) {
+  await client.destinationProfile.createMany({
+    data: seedGeography
+      .filter((g) => g.type === 'CITY' || g.type === 'DESTINATION')
+      .map((g) => ({
+        id: g.id,
+        sourceId: seedSourceId,
+        interests: [],
+        seasons: [],
+      })),
+    skipDuplicates: true,
   });
 }

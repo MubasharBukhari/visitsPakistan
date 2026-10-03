@@ -1,0 +1,15 @@
+# Sprint 2 — attractions and experiences
+
+Review Sprint 1 and the product/release, module architecture, canonical graph/schema, API, UX and SEO documentation. Preserve existing hierarchy, DestinationProfile, CMS workflows and public eligibility rules.
+
+Implement richer Places with extended place types and sourced optional facts: alternate names, summary, category, opening/admission information, recommended duration, best-time text/season tags, nullable family suitability, accessibility and facilities. Extend independent Experience concepts with summary, alternate names and nullable family suitability. Preserve PostGIS geography(Point,4326), GiST indexes, UUID registry identity, sources, status and freshness. Missing information is null/unknown, never false/free/open. Development seed facts remain unverified drafts.
+
+Discovery owns a public repeatable-read projection over Places/Experiences, approved relation edges, eligible Destinations and Content snapshots. Add `/api/v1/places/:slug`, `/api/v1/experiences/:slug`, `/api/v1/things-to-do`; category/season/family/duration/destination filters combine with AND and use bounded stable pagination. Duration is a maximum recommended/concept duration in minutes, not travel time. Destination association follows approved direct HAS_ATTRACTION/HAS_EXPERIENCE or Destination→Place→Experience edges. NEAR is symmetric and explicitly asserted; optional distance is PostGIS straight-line distance, not road travel advice.
+
+Add EXPERIENCE_EDITORIAL to the custom CMS, requiring a canonical Experience UUID. Attraction editorial requires an attraction-family Place UUID. Reuse existing typed blocks, sources, author/reviewer, SEO, hero and immutable review/publication snapshots. No CMS duplication of canonical facts. Populate test-only published editorial to verify mapping, while development seed entities remain drafts.
+
+Build SSR place/experience detail and Things To Do listing, source/freshness/metadata/breadcrumbs/valid Place or TouristAttraction JSON-LD, internal graph links, responsive/empty/error/loading/404 handling. Extend destination relation links for attraction-family types without hardcoding entities. Extend sitemap/llms discovery to public page families.
+
+Tests: real PostgreSQL/PostGIS rich facts, typed relations, symmetric NEAR/distance, provenance/owner withdrawal, facets/filter bounds and pagination; canonical CMS mapping and immutable snapshots; SSR metadata/links/empty states; browser Destination→Attraction→Experience and mobile layout. Run install, migrations/seeding, lint, typecheck, unit/integration tests and all builds. No database reset, OpenSearch, partners, commercial products, quotes or AI.
+
+Risks/open questions: real opening/admission/accessibility/season facts need independent verification; category vocabulary needs content governance. Unlocated global experiences are allowed, but located concepts require eligible geographic owners. Relationship provenance is independently checked. Related lists are bounded; pagination and later bulk sitemap projections can evolve when measured scale requires it.

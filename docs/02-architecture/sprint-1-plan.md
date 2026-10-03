@@ -1,0 +1,17 @@
+# Sprint 1 — geography and destinations
+
+Extend the working canonical Geography/Destinations and custom CMS boundaries, retaining existing features. Read the product/release, architecture, graph/schema, API, UX and SEO documents listed in the sprint request. The user confirmed completing the custom CMS rather than replacing it with Strapi.
+
+Gaps: expand representative seed geography and destination profiles; add optional canonical geographic summary; expose immediate geographic parent, bounded published children and eligible sibling destinations; add typed destination editorial quick answer, overview, why visit, best time, travel tips and FAQs; expose `/api/v1/destinations` while retaining `/v1` compatibility; render sourced editorial sections and geographic links in meaningful initial HTML; add published destination sitemap, robots.txt and llms.txt under repository SEO requirements.
+
+Architecture: Geography retains identity/hierarchy/geography(Point,4326) with existing GiST/parent indexes. DestinationProfile is the first-class destination concept referencing CITY or DESTINATION GeoEntity IDs, independently of CMS. One additive migration adds geography summary and revision-owned destination presentation JSON; submitted/published revision immutability covers this field. Existing snapshots remain readable. Do not fabricate intermediate parents, use editorial HTML or duplicate coordinates in the CMS. Future domains are unchanged.
+
+Tests: real database hierarchy tiers/cycles, slug uniqueness, parent FK, PostGIS, expanded idempotent drafts; HTTP canonical hierarchy and `/api/v1` compatibility/publication gates; revision JSON workflow and immutability; server-rendered editorial/FAQ/internal links and metadata. Run lint, typecheck, unit/integration tests, builds and responsive browser checks. Preserve the existing PostGIS server; never reset databases.
+
+Risks/open questions: production taxonomy, seasons and factual sample content require source/editorial approval; seed coordinates are explicitly approximate development fixtures. Newly exposed children/siblings are bounded and must satisfy publication/provenance checks. Destination presentation is optional for backward compatibility, so legacy pages remain usable while editors complete their content.
+
+## Completion evidence — 2026-10-03
+
+Implemented the scoped extensions and applied the seventh additive migration to development and isolated test databases without resets. The expanded seed ran twice and preserved existing records. Frozen install, lint, typecheck, 53 unit tests, 54 real integration tests, all 12 builds and formatting passed. Browser checks verified desktop/mobile editorial sections, FAQ, geography, related destination navigation and no horizontal overflow; Googlebot missing-page response was 404/noindex. Sitemap, robots and llms returned 200; sitemap included published fixture URLs and excluded draft seeds. Preview signal cleanup completed and sources/profiles/canonical records were withdrawn; verification processes were stopped. Existing future-domain features were preserved without implementing additional domains.
+
+Before publication, independently approve canonical/profile provenance and factual editorial content. The seed is representative development data, not an automatic source of approved travel advice. See [development contract](../development/destinations.md) for a populated test-only visitor preview and publication workflow.

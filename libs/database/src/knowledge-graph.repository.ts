@@ -55,6 +55,7 @@ export class PrismaKnowledgeGraphRepository implements KnowledgeGraphRepository 
         geoEntity: {
           create: {
             type: input.type,
+            summary: input.summary,
             parentId: input.parentId,
             altNames: input.altNames,
             timezone: input.timezone,
@@ -74,7 +75,23 @@ export class PrismaKnowledgeGraphRepository implements KnowledgeGraphRepository 
     const entity = await this.tx.entityRegistry.create({
       data: {
         ...identity(input, 'PLACE'),
-        place: { create: { type: input.type, geoEntityId: input.geoEntityId } },
+        place: {
+          create: {
+            type: input.type,
+            geoEntityId: input.geoEntityId,
+            altNames: input.altNames,
+            summary: input.summary,
+            category: input.category,
+            openingInformation: input.openingInformation,
+            admissionInformation: input.admissionInformation,
+            durationMinutes: input.durationMinutes,
+            bestTime: input.bestTime,
+            seasons: input.seasons,
+            familySuitable: input.familySuitable,
+            accessibility: input.accessibility,
+            facilities: input.facilities,
+          },
+        },
       },
       select: projection,
     });
@@ -92,6 +109,9 @@ export class PrismaKnowledgeGraphRepository implements KnowledgeGraphRepository 
         experience: {
           create: {
             category: input.category,
+            altNames: input.altNames,
+            summary: input.summary,
+            familySuitable: input.familySuitable,
             geoEntityId: input.geoEntityId,
             difficulty: input.difficulty,
             durationMinutes: input.durationMinutes,

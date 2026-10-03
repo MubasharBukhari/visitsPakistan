@@ -22,6 +22,7 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { discoveryModule } from './discovery';
 import { cmsModule, CmsErrorFilter } from './cms';
 import { destinationsModule } from './destinations';
 import type { DependencyProbe } from '@visitspakistan/domain';
@@ -138,9 +139,14 @@ export async function createApplication(
   config: ServerConfig,
   probes: DependencyProbe[],
   logger: LoggerService | false = new JsonLogger(),
+  shutdownHooks = true,
 ): Promise<INestApplication> {
   @Module({
-    imports: [cmsModule(config), destinationsModule(config)],
+    imports: [
+      cmsModule(config),
+      destinationsModule(config),
+      discoveryModule(config),
+    ],
     controllers: [HealthController],
     providers: [
       HealthService,
@@ -194,6 +200,6 @@ export async function createApplication(
       jsonDocumentUrl: 'api/docs-json',
     });
   }
-  app.enableShutdownHooks();
+  if (shutdownHooks) app.enableShutdownHooks();
   return app;
 }

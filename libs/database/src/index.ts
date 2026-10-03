@@ -39,3 +39,5 @@ export * from './media-store';
 export { Prisma } from './generated/client';
 
 export * from './destination-reader';
+
+export * from './discovery-reader';

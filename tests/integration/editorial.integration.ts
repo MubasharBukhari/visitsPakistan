@@ -368,8 +368,8 @@ test('fixture provenance and unpublished canonical entities block approval/publi
   r = await action(r.body, 'approve');
   await action(r.body, 'publish', editorToken, 422);
 });
-test('eight editorial types exist and missing typed canonical references are rejected', async () => {
-  expect(editorialTypes).toHaveLength(8);
+test('nine editorial types exist and missing typed canonical references are rejected', async () => {
+  expect(editorialTypes).toHaveLength(9);
   await request(app.getHttpServer())
     .post('/api/v1/admin/content')
     .auth(authorToken, { type: 'bearer' })

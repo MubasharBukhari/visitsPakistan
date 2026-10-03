@@ -70,11 +70,14 @@ enum PlaceType {
   MARKET
   VENUE
   TRANSPORT_POINT
+  LANDMARK
+  NATURAL_ATTRACTION
 }
 
 enum ContentType {
   DESTINATION_EDITORIAL
   ATTRACTION_EDITORIAL
+  EXPERIENCE_EDITORIAL
   TRAVEL_GUIDE
   FOOD_GUIDE
   ROUTE_GUIDE
@@ -123,6 +126,7 @@ model GeoEntity {
   kind               EntityKind                            @default(GEO_ENTITY)
   entity             EntityRegistry                        @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
   type               GeoEntityType
+  summary            String?                               @db.VarChar(1000)
   parentId           String?                               @map("parent_id") @db.Uuid
   parent             GeoEntity?                            @relation("GeoHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children           GeoEntity[]                           @relation("GeoHierarchy")
@@ -140,17 +144,30 @@ model GeoEntity {
 }
 
 model Place {
-  id          String                                @id @db.Uuid
-  kind        EntityKind                            @default(PLACE)
-  entity      EntityRegistry                        @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
-  type        PlaceType
-  geoEntityId String                                @map("geo_entity_id") @db.Uuid
-  geoEntity   GeoEntity                             @relation(fields: [geoEntityId], references: [id], onDelete: Restrict)
-  facts       Json                                  @default("{}")
-  location    Unsupported("geography(Point,4326)")?
+  id                   String                                @id @db.Uuid
+  kind                 EntityKind                            @default(PLACE)
+  entity               EntityRegistry                        @relation(fields: [id, kind], references: [id, kind], onDelete: Restrict)
+  type                 PlaceType
+  altNames             String[]                              @default([]) @map("alt_names")
+  summary              String?                               @db.VarChar(1000)
+  category             String?                               @db.VarChar(80)
+  openingInformation   String?                               @map("opening_information") @db.VarChar(3000)
+  admissionInformation String?                               @map("admission_information") @db.VarChar(3000)
+  durationMinutes      Int?                                  @map("duration_minutes")
+  bestTime             String?                               @map("best_time") @db.VarChar(3000)
+  seasons              String[]                              @default([])
+  familySuitable       Boolean?                              @map("family_suitable")
+  accessibility        String?                               @db.VarChar(3000)
+  facilities           String[]                              @default([])
+  geoEntityId          String                                @map("geo_entity_id") @db.Uuid
+  geoEntity            GeoEntity                             @relation(fields: [geoEntityId], references: [id], onDelete: Restrict)
+  facts                Json                                  @default("{}")
+  location             Unsupported("geography(Point,4326)")?
 
   @@unique([id, kind])
   @@index([geoEntityId, type])
+  @@index([category, familySuitable, durationMinutes])
+  @@index([seasons], type: Gin)
   @@map("place")
 }
 
@@ -161,6 +178,9 @@ model Experience {
   geoEntityId     String?        @map("geo_entity_id") @db.Uuid
   geoEntity       GeoEntity?     @relation(fields: [geoEntityId], references: [id], onDelete: Restrict)
   category        String
+  altNames        String[]       @default([]) @map("alt_names")
+  summary         String?        @db.VarChar(1000)
+  familySuitable  Boolean?       @map("family_suitable")
   difficulty      String?
   durationMinutes Int?           @map("duration_minutes")
   seasons         String[]       @default([])
@@ -168,7 +188,8 @@ model Experience {
 
   @@unique([id, kind])
   @@index([geoEntityId, category])
-  @@index([category])
+  @@index([category, familySuitable, durationMinutes])
+  @@index([seasons], type: Gin)
   @@map("experience")
 }
 
@@ -340,6 +361,7 @@ model EditorialRevision {
   seoTitle        String                     @map("seo_title")
   metaDescription String                     @map("meta_description")
   blocks          Json
+  destination     Json?
   authorId        String                     @map("author_id") @db.Uuid
   author          StaffAccount               @relation("RevisionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
   reviewerId      String?                    @map("reviewer_id") @db.Uuid

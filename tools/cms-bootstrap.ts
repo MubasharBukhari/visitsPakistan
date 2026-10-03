@@ -212,6 +212,63 @@ async function bootstrap() {
           ],
         },
       });
+    for (const [type, slug, title, entityId] of [
+      [
+        'ATTRACTION_EDITORIAL',
+        'attabad-lake-editorial',
+        'Attabad Lake editorial draft',
+        seedId(20),
+      ],
+      [
+        'EXPERIENCE_EDITORIAL',
+        'lake-boating-editorial',
+        'Boating experience editorial draft',
+        seedId(21),
+      ],
+    ] as const) {
+      if (
+        await db.entityRegistry.findUnique({
+          where: {
+            kind_locale_slug: { kind: 'CONTENT_ITEM', locale: 'en', slug },
+          },
+        })
+      )
+        continue;
+      await store.create(actors[0]!, {
+        type,
+        slug,
+        locale: 'en',
+        primaryEntityId: entityId,
+        body: {
+          title,
+          summary:
+            'Development editorial sample linked to canonical knowledge. Independent evidence is required before publication.',
+          seoTitle: `${title} | VisitsPakistan`,
+          metaDescription:
+            'A development sample illustrating canonical entity references, credited sources and independent editorial review. This draft is not approved visitor guidance.',
+          heroMediaId: hero.id,
+          lastVerified: null,
+          sourceIds: [seedSourceId],
+          canonicalIds: [entityId],
+          blocks: [
+            {
+              type: 'paragraph',
+              text: 'Use sourced narrative here. Opening, admission, duration and geographic facts remain owned by the canonical entity.',
+            },
+            {
+              type: 'entity_reference',
+              entityId,
+              label: 'Canonical travel knowledge reference',
+            },
+            {
+              type: 'callout',
+              tone: 'note',
+              text: 'Unverified development draft. The hero is an illustration, not a photograph of this attraction or activity.',
+            },
+          ],
+        },
+      });
+    }
     console.log(
       'CMS draft, brand theme and templates ready. New local staff credentials, if created, are in ignored .cms-bootstrap.json',
     );

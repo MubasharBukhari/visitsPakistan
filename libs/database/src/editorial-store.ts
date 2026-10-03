@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
   assertTransition,
+  attractionTypes,
   canEdit,
   createEditorialSchema,
   editorialBodySchema,
@@ -145,6 +146,9 @@ export class EditorialStore {
       seoTitle: body.seoTitle,
       metaDescription: body.metaDescription,
       blocks: body.blocks as Prisma.InputJsonValue,
+      destination: body.destination
+        ? (body.destination as Prisma.InputJsonValue)
+        : Prisma.DbNull,
       heroMediaId: body.heroMediaId,
       lastVerified: body.lastVerified ? new Date(body.lastVerified) : null,
     };
@@ -154,11 +158,17 @@ export class EditorialStore {
     if (!actor.roles.includes('CONTRIBUTOR') && !actor.roles.includes('EDITOR'))
       throw new EditorialError(403, 'Editorial permission required');
     const data = createEditorialSchema.parse(input);
+    if (data.body.destination && data.type !== 'DESTINATION_EDITORIAL')
+      throw new EditorialError(
+        422,
+        'Destination presentation belongs to destination editorial only',
+      );
     const id = randomUUID();
     await this.transaction(async (tx) => {
       if (
         (data.type === 'DESTINATION_EDITORIAL' ||
-          data.type === 'ATTRACTION_EDITORIAL') &&
+          data.type === 'ATTRACTION_EDITORIAL' ||
+          data.type === 'EXPERIENCE_EDITORIAL') &&
         !data.primaryEntityId
       )
         throw new EditorialError(
@@ -168,7 +178,7 @@ export class EditorialStore {
       if (data.primaryEntityId) {
         const entity = await tx.entityRegistry.findUnique({
           where: { id: data.primaryEntityId },
-          include: { geoEntity: true },
+          include: { geoEntity: true, place: true },
         });
         if (!entity || entity.deletedAt || entity.status === 'WITHDRAWN')
           throw new EditorialError(422, 'Choose an active canonical entity');
@@ -181,10 +191,23 @@ export class EditorialStore {
             422,
             'Destination editorial must reference a canonical destination',
           );
-        if (data.type === 'ATTRACTION_EDITORIAL' && entity.kind !== 'PLACE')
+        if (
+          data.type === 'ATTRACTION_EDITORIAL' &&
+          (entity.kind !== 'PLACE' ||
+            !entity.place ||
+            !attractionTypes.includes(entity.place.type))
+        )
           throw new EditorialError(
             422,
-            'Attraction editorial must reference a canonical place',
+            'Attraction editorial must reference an attraction-family place',
+          );
+        if (
+          data.type === 'EXPERIENCE_EDITORIAL' &&
+          entity.kind !== 'EXPERIENCE'
+        )
+          throw new EditorialError(
+            422,
+            'Experience editorial must reference a canonical experience',
           );
       }
       await tx.entityRegistry.create({
@@ -259,6 +282,14 @@ export class EditorialStore {
       if (!doc?.currentRevision)
         throw new EditorialError(404, 'Content not found');
       const r = doc.currentRevision;
+      if (
+        data.body.destination &&
+        doc.contentItem.type !== 'DESTINATION_EDITORIAL'
+      )
+        throw new EditorialError(
+          422,
+          'Destination presentation belongs to destination editorial only',
+        );
       if (!canEdit(actor, r.authorId))
         throw new EditorialError(403, 'Permission denied');
       if (doc.version !== data.expectedVersion)
@@ -336,6 +367,7 @@ export class EditorialStore {
         seoTitle: r.seoTitle,
         metaDescription: r.metaDescription,
         blocks: r.blocks,
+        destination: r.destination,
         heroMediaId: r.heroMediaId,
         lastVerified: r.lastVerified?.toISOString() ?? null,
         sourceIds: r.sources.map((s) => s.sourceId),
@@ -537,6 +569,7 @@ export class EditorialStore {
       seoTitle: r.seoTitle,
       metaDescription: r.metaDescription,
       blocks: r.blocks,
+      destination: r.destination,
       author: r.author,
       reviewer: r.reviewer,
       sources: r.sources.map((s) => ({
@@ -575,6 +608,7 @@ export class EditorialStore {
           slug: true,
           status: true,
           geoEntity: { select: { type: true } },
+          place: { select: { type: true } },
         },
         orderBy: { name: 'asc' },
         take: 500,
@@ -787,11 +821,14 @@ export class EditorialStore {
               .object({ type: z.enum(editorialTypes), templateId: z.uuid() })
               .strict(),
           )
-          .length(8),
+          .length(editorialTypes.length),
       })
       .strict()
       .parse(input);
-    if (new Set(data.assignments.map((a) => a.type)).size !== 8)
+    if (
+      new Set(data.assignments.map((a) => a.type)).size !==
+      editorialTypes.length
+    )
       throw new EditorialError(
         422,
         'Assign each editorial content type exactly once',

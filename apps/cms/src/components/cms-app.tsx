@@ -44,6 +44,8 @@ import {
   type CmsActor,
   type ContentBlock,
   type EditorialBody,
+  attractionTypes,
+  type PlaceType,
   type EditorialType,
   type EditorialStatus,
   type ThemeTokens,
@@ -68,6 +70,7 @@ type Canonical = {
   slug: string;
   status: string;
   geoEntity?: { type: string } | null;
+  place?: { type: PlaceType } | null;
 };
 type Revision = {
   id: string;
@@ -78,6 +81,7 @@ type Revision = {
   seoTitle: string;
   metaDescription: string;
   blocks: ContentBlock[];
+  destination?: EditorialBody['destination'];
   lastVerified: string | null;
   updatedAt: string;
   heroMediaId: string | null;
@@ -1036,17 +1040,22 @@ function CreateDialog({
               name="primary"
               required={
                 type === 'DESTINATION_EDITORIAL' ||
-                type === 'ATTRACTION_EDITORIAL'
+                type === 'ATTRACTION_EDITORIAL' ||
+                type === 'EXPERIENCE_EDITORIAL'
               }
             >
               <option value="">No primary entity</option>
               {entities
                 .filter((e) =>
                   type === 'DESTINATION_EDITORIAL'
-                    ? e.geoEntity?.type === 'DESTINATION'
+                    ? ['DESTINATION', 'CITY'].includes(e.geoEntity?.type ?? '')
                     : type === 'ATTRACTION_EDITORIAL'
-                      ? e.kind === 'PLACE'
-                      : true,
+                      ? e.kind === 'PLACE' &&
+                        !!e.place &&
+                        attractionTypes.includes(e.place.type)
+                      : type === 'EXPERIENCE_EDITORIAL'
+                        ? e.kind === 'EXPERIENCE'
+                        : true,
                 )
                 .map((e) => (
                   <option key={e.id} value={e.id}>
@@ -1074,6 +1083,7 @@ function revisionBody(r: Revision): EditorialBody {
     seoTitle: r.seoTitle,
     metaDescription: r.metaDescription,
     blocks: r.blocks,
+    destination: r.destination ?? null,
     sourceIds: r.sources.map((s) => s.sourceId),
     canonicalIds: r.references.map((x) => x.entityId),
     heroMediaId: r.heroMediaId,
@@ -1267,6 +1277,39 @@ function Editor({
                     unoptimized
                   />
                 )}
+              {body.destination && (
+                <section>
+                  <p className="lead">{body.destination.quickAnswer}</p>
+                  {[
+                    ['Overview', body.destination.overview],
+                    ['Why visit', body.destination.whyVisit],
+                    ['Best time', body.destination.bestTime],
+                  ].map(([heading, text]) =>
+                    text ? (
+                      <section key={heading}>
+                        <h3>{heading}</h3>
+                        <p>{text}</p>
+                      </section>
+                    ) : null,
+                  )}
+                  {body.destination.travelTips.length > 0 && (
+                    <>
+                      <h3>Travel information</h3>
+                      <ul>
+                        {body.destination.travelTips.map((tip, i) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {body.destination.faq.map((f, i) => (
+                    <section key={i}>
+                      <h3>{f.question}</h3>
+                      <p>{f.answer}</p>
+                    </section>
+                  ))}
+                </section>
+              )}
               <PreviewBlocks blocks={body.blocks} media={media} />
             </article>
           ) : (
@@ -1292,6 +1335,13 @@ function Editor({
                   maxLength={400}
                 />
               </label>
+              {doc.contentItem.type === 'DESTINATION_EDITORIAL' && (
+                <DestinationFields
+                  value={body.destination ?? null}
+                  disabled={!editable}
+                  onChange={(value) => update('destination', value)}
+                />
+              )}
               <div className="block-heading">
                 <h3>Story blocks</h3>
                 <span>{body.blocks.length} blocks</span>
@@ -2281,5 +2331,154 @@ function TemplateForm({
         )}
       </form>
     </section>
+  );
+}
+
+function DestinationFields({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: EditorialBody['destination'];
+  disabled: boolean;
+  onChange: (value: NonNullable<EditorialBody['destination']>) => void;
+}) {
+  const fields = value ?? {
+    quickAnswer: '',
+    overview: '',
+    whyVisit: '',
+    bestTime: '',
+    travelTips: [],
+    faq: [],
+  };
+  return (
+    <fieldset disabled={disabled} className="studio-card">
+      <legend>Destination presentation</legend>
+      <p>
+        Link facts to credited sources and verify current travel information
+        before publishing.
+      </p>
+      {(
+        [
+          ['quickAnswer', 'Quick answer', 1000],
+          ['overview', 'Overview', 10000],
+          ['whyVisit', 'Why visit', 10000],
+          ['bestTime', 'Best time', 5000],
+        ] as const
+      ).map(([key, label, max]) => (
+        <label className="form-label" key={key}>
+          {label}
+          <textarea
+            className="form-control"
+            rows={3}
+            maxLength={max}
+            value={fields[key]}
+            onChange={(e) => onChange({ ...fields, [key]: e.target.value })}
+          />
+        </label>
+      ))}
+      <h3>Travel tips</h3>
+      {fields.travelTips.map((tip, i) => (
+        <div className="content-block" key={i}>
+          <label className="form-label">
+            Travel tip {i + 1}
+            <textarea
+              className="form-control"
+              maxLength={2000}
+              value={tip}
+              onChange={(e) =>
+                onChange({
+                  ...fields,
+                  travelTips: fields.travelTips.map((old, n) =>
+                    n === i ? e.target.value : old,
+                  ),
+                })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-danger"
+            onClick={() =>
+              onChange({
+                ...fields,
+                travelTips: fields.travelTips.filter((_, n) => n !== i),
+              })
+            }
+          >
+            Remove travel tip {i + 1}
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="btn btn-outline-primary"
+        disabled={disabled || fields.travelTips.length >= 30}
+        onClick={() =>
+          onChange({ ...fields, travelTips: [...fields.travelTips, ''] })
+        }
+      >
+        Add travel tip
+      </button>
+      <h3>Frequently asked questions</h3>
+      {fields.faq.map((f, i) => (
+        <div className="content-block" key={i}>
+          <label className="form-label">
+            Question {i + 1}
+            <input
+              className="form-control"
+              maxLength={300}
+              value={f.question}
+              onChange={(e) =>
+                onChange({
+                  ...fields,
+                  faq: fields.faq.map((old, n) =>
+                    n === i ? { ...old, question: e.target.value } : old,
+                  ),
+                })
+              }
+            />
+          </label>
+          <label className="form-label">
+            Answer {i + 1}
+            <textarea
+              className="form-control"
+              maxLength={3000}
+              value={f.answer}
+              onChange={(e) =>
+                onChange({
+                  ...fields,
+                  faq: fields.faq.map((old, n) =>
+                    n === i ? { ...old, answer: e.target.value } : old,
+                  ),
+                })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-danger"
+            onClick={() =>
+              onChange({ ...fields, faq: fields.faq.filter((_, n) => n !== i) })
+            }
+          >
+            Remove question {i + 1}
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="btn btn-outline-primary"
+        disabled={disabled || fields.faq.length >= 30}
+        onClick={() =>
+          onChange({
+            ...fields,
+            faq: [...fields.faq, { question: '', answer: '' }],
+          })
+        }
+      >
+        Add FAQ
+      </button>
+    </fieldset>
   );
 }

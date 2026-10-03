@@ -274,6 +274,28 @@ export async function destinationFixture(db: PrismaClient, mediaRoot: string) {
         seoTitle: `${title} | VisitsPakistan`,
         metaDescription:
           'Explore this synthetic destination editorial and its linked canonical places. Used exclusively to verify the destination vertical in an isolated test database.',
+        ...(type === 'DESTINATION_EDITORIAL'
+          ? {
+              destination: {
+                quickAnswer:
+                  'A synthetic destination overview for isolated testing.',
+                overview:
+                  'Explore the canonical geography through sourced editorial content.',
+                whyVisit:
+                  'This fixture demonstrates a destination page, not travel advice.',
+                bestTime:
+                  'Check approved seasonal information before planning a visit.',
+                travelTips: ['Check current official travel information.'],
+                faq: [
+                  {
+                    question: 'Where is this destination?',
+                    answer:
+                      'Its canonical geographic parent is shown in the quick facts.',
+                  },
+                ],
+              },
+            }
+          : {}),
         blocks: [
           { type: 'heading', level: 2, text: 'A different perspective' },
           {

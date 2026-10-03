@@ -7,6 +7,7 @@ import type {
   DestinationEditorial,
   PublicEntity,
 } from '@visitspakistan/domain';
+import { entityPath } from '../../../lib/discovery-seo';
 import { getDestination } from '../../../lib/destination-api';
 import {
   absoluteUrl,
@@ -18,7 +19,10 @@ import {
   verifiedDate,
   safeSourceUrl,
 } from '../../../lib/destination-seo';
-import { LandscapePlaceholder } from '../../../components/destination-card';
+import {
+  DestinationCard,
+  LandscapePlaceholder,
+} from '../../../components/destination-card';
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -95,7 +99,9 @@ export default async function Detail({ params, searchParams }: Props) {
             {d.region?.name ?? 'Explore Pakistan'}
           </span>
           <h1>{d.canonical.name}</h1>
-          {e?.summary && <p>{e.summary}</p>}
+          {(e?.summary || d.canonical.summary) && (
+            <p>{e?.summary || d.canonical.summary}</p>
+          )}
           <div className="destination-detail-tags">
             {d.interests.map((t) => (
               <Link
@@ -137,6 +143,15 @@ export default async function Detail({ params, searchParams }: Props) {
         aria-label="On this destination page"
       >
         {e && <a href="#destination-story">Overview</a>}
+        {e?.destination?.bestTime && (
+          <a href="#destination-best-time">Best time</a>
+        )}
+        {Boolean(e?.destination?.travelTips.length) && (
+          <a href="#destination-travel">Travel information</a>
+        )}
+        {Boolean(e?.destination?.faq.length) && (
+          <a href="#destination-faq">FAQ</a>
+        )}
         {d.attractions.length > 0 && (
           <a href="#destination-attractions">Attractions</a>
         )}
@@ -145,9 +160,23 @@ export default async function Detail({ params, searchParams }: Props) {
         )}
         {d.food.length > 0 && <a href="#destination-food">Food</a>}
         {d.guides.length > 0 && <a href="#destination-guides">Travel guides</a>}
+        <Link
+          href={`/things-to-do/?destination=${encodeURIComponent(d.canonical.slug)}&locale=${d.canonical.locale}`}
+        >
+          Things to do
+        </Link>
         <a href="#destination-facts">At a glance</a>
         <a href="#destination-sources">Sources</a>
       </nav>
+      {e?.destination?.quickAnswer && (
+        <section
+          className="destination-quick-answer destination-story-note"
+          aria-label="Quick answer"
+        >
+          <h2>Quick answer</h2>
+          <p>{e.destination.quickAnswer}</p>
+        </section>
+      )}
       <div className="destination-detail-columns">
         <div>
           {e ? (
@@ -161,6 +190,51 @@ export default async function Detail({ params, searchParams }: Props) {
                   <> · Editorial verified {verifiedDate(e.lastVerified)}</>
                 )}
               </p>
+              {e.destination?.overview && (
+                <section>
+                  <h2>Overview</h2>
+                  <p className="destination-editorial-text">
+                    {e.destination.overview}
+                  </p>
+                </section>
+              )}
+              {e.destination?.whyVisit && (
+                <section>
+                  <h2>Why visit {d.canonical.name}</h2>
+                  <p className="destination-editorial-text">
+                    {e.destination.whyVisit}
+                  </p>
+                </section>
+              )}
+              {e.destination?.bestTime && (
+                <section id="destination-best-time">
+                  <h2>Best time</h2>
+                  <p className="destination-editorial-text">
+                    {e.destination.bestTime}
+                  </p>
+                </section>
+              )}
+              {Boolean(e.destination?.travelTips.length) && (
+                <section id="destination-travel">
+                  <h2>Travel information</h2>
+                  <ul>
+                    {e.destination!.travelTips.map((tip, i) => (
+                      <li key={i}>{tip}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {Boolean(e.destination?.faq.length) && (
+                <section id="destination-faq">
+                  <h2>Frequently asked questions</h2>
+                  {e.destination!.faq.map((f, i) => (
+                    <details key={i}>
+                      <summary>{f.question}</summary>
+                      <p>{f.answer}</p>
+                    </details>
+                  ))}
+                </section>
+              )}
               {e.blocks.map((b, i) => (
                 <EditorialBlock
                   key={i}
@@ -191,12 +265,14 @@ export default async function Detail({ params, searchParams }: Props) {
             title="Places that draw you in"
             eyebrow="Attractions"
             entities={d.attractions}
+            locale={d.canonical.locale}
           />
           <EntitySection
             id="destination-experiences"
             title="Discover a different perspective"
             eyebrow="Experiences"
             entities={d.experiences}
+            locale={d.canonical.locale}
           />
           <EntitySection
             id="destination-food"
@@ -240,6 +316,27 @@ export default async function Detail({ params, searchParams }: Props) {
                 </dd>
               </>
             )}
+            {d.geographic_parent && (
+              <>
+                <dt>Geographic parent</dt>
+                <dd>
+                  {d.geographic_parent.destination_slug ? (
+                    <Link
+                      href={destinationPath(
+                        d.geographic_parent.destination_slug,
+                        d.canonical.locale,
+                      )}
+                    >
+                      {d.geographic_parent.name} ↗
+                    </Link>
+                  ) : (
+                    d.geographic_parent.name
+                  )}
+                </dd>
+              </>
+            )}
+            <dt>Geographic hierarchy</dt>
+            <dd>{d.hierarchy.map((g) => g.name).join(' → ')}</dd>
             <dt>Time zone</dt>
             <dd>{d.canonical.timezone}</dd>
             {d.seasons.length > 0 && (
@@ -269,6 +366,47 @@ export default async function Detail({ params, searchParams }: Props) {
           </Link>
         </aside>
       </div>
+      {d.geographic_children.length > 0 && (
+        <section className="destination-related">
+          <h2>Within {d.canonical.name}</h2>
+          <ul className="destination-entity-grid">
+            {d.geographic_children.map((g) => (
+              <li key={g.id}>
+                <h3>
+                  {g.destination_slug ? (
+                    <Link
+                      href={destinationPath(
+                        g.destination_slug,
+                        d.canonical.locale,
+                      )}
+                    >
+                      {g.name} ↗
+                    </Link>
+                  ) : (
+                    g.name
+                  )}
+                </h3>
+                {g.summary && <p>{g.summary}</p>}
+                <p>Verified {verifiedDate(g.last_verified)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {d.related_destinations.length > 0 && (
+        <section className="destination-related">
+          <span className="destination-eyebrow">Keep exploring</span>
+          <h2>Related destinations</h2>
+          <div className="destination-grid">
+            {d.related_destinations.map((related) => (
+              <DestinationCard
+                key={related.canonical.id}
+                destination={related}
+              />
+            ))}
+          </div>
+        </section>
+      )}
       <section id="destination-sources" className="destination-sources">
         <div>
           <span className="destination-eyebrow">Knowledge you can trace</span>
@@ -315,11 +453,13 @@ function EntitySection({
   title,
   eyebrow,
   entities,
+  locale = 'en',
 }: {
   id: string;
   title: string;
   eyebrow: string;
   entities: PublicEntity[];
+  locale?: string;
 }) {
   if (!entities.length) return null;
   return (
@@ -330,7 +470,16 @@ function EntitySection({
         {entities.map((e) => (
           <li key={e.id}>
             <span aria-hidden="true">↗</span>
-            <h3>{e.name}</h3>
+            <h3>
+              {e.kind === 'EXPERIENCE' ||
+              (e.kind === 'PLACE' && id === 'destination-attractions') ? (
+                <Link href={entityPath({ kind: e.kind, slug: e.slug, locale })}>
+                  {e.name} ↗
+                </Link>
+              ) : (
+                e.name
+              )}
+            </h3>
             <p>Verified {verifiedDate(e.last_verified)}</p>
             {e.sources[0] && safeSourceUrl(e.sources[0].url) && (
               <a

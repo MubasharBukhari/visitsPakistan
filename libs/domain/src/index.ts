@@ -11,3 +11,5 @@ export * from './knowledge-graph';
 export * from './editorial';
 
 export * from './destinations';
+
+export * from './discovery';

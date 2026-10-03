@@ -2,6 +2,7 @@ import {
   assertTransition,
   EditorialError,
   editorialBodySchema,
+  destinationPresentationSchema,
   referenceIds,
   readyForReview,
   brandTokens,
@@ -77,4 +78,31 @@ test('brand theme contrast is validated without accepting executable CSS', () =>
   expect(() => validateTheme({ ...brandTokens, primary: '#FFFFFF' })).toThrow(
     'contrast',
   );
+});
+
+test('destination presentation rejects duplicated geography and malformed FAQ pairs', () => {
+  const value = {
+    quickAnswer: 'A sourced answer',
+    overview: 'Overview',
+    whyVisit: '',
+    bestTime: '',
+    travelTips: [],
+    faq: [{ question: 'Where?', answer: 'See canonical geography.' }],
+  };
+  expect(destinationPresentationSchema.parse(value).faq).toHaveLength(1);
+  expect(() =>
+    destinationPresentationSchema.parse({ ...value, coordinates: [74, 36] }),
+  ).toThrow();
+  expect(() =>
+    destinationPresentationSchema.parse({
+      ...value,
+      faq: [{ question: 'Where?', answer: '' }],
+    }),
+  ).toThrow();
+  expect(() =>
+    destinationPresentationSchema.parse({
+      ...value,
+      quickAnswer: 'x'.repeat(1001),
+    }),
+  ).toThrow();
 });
