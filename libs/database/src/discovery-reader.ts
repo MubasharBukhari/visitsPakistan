@@ -10,7 +10,7 @@ import {
 import { Prisma, type PrismaClient } from './generated/client';
 import { EditorialStore } from './editorial-store';
 import { publishedEditorial } from './public-editorial';
-const cte = Prisma.sql`WITH public_entities AS (
+export const discoveryPublicCte = Prisma.sql`WITH public_entities AS (
  SELECT e.* FROM entity_registry e JOIN source_record s ON s.id=e.primary_source_id WHERE e.status='PUBLISHED' AND e.deleted_at IS NULL AND e.last_verified IS NOT NULL AND s.retired_at IS NULL AND s.source_type<>'DEVELOPMENT_FIXTURE'
 ), geography AS (SELECT g.* FROM geo_entity g JOIN public_entities e ON e.id=g.id), destinations AS (
  SELECT e.* FROM destination_profile p JOIN public_entities e ON e.id=p.id JOIN source_record s ON s.id=p.source_id WHERE p.status='PUBLISHED' AND p.deleted_at IS NULL AND p.last_verified IS NOT NULL AND s.retired_at IS NULL AND s.source_type<>'DEVELOPMENT_FIXTURE'
@@ -23,6 +23,7 @@ const cte = Prisma.sql`WITH public_entities AS (
  SELECT d.id AS destination_id,n.id AS node_id FROM destinations d JOIN edges r ON r.source_id=d.id JOIN nodes n ON n.id=r.target_id WHERE (r.type='HAS_ATTRACTION' AND n.kind='PLACE') OR (r.type='HAS_EXPERIENCE' AND n.kind='EXPERIENCE')
  UNION SELECT d.id,x.id FROM destinations d JOIN edges a ON a.source_id=d.id AND a.type='HAS_ATTRACTION' JOIN nodes p ON p.id=a.target_id AND p.kind='PLACE' JOIN edges b ON b.source_id=p.id AND b.type='HAS_EXPERIENCE' JOIN nodes x ON x.id=b.target_id AND x.kind='EXPERIENCE'
 )`;
+const cte = discoveryPublicCte;
 const sourceSelect = {
   id: true,
   title: true,

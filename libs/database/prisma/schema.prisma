@@ -518,3 +518,23 @@ model DestinationProfile {
   @@index([seasons], type: Gin)
   @@map("destination_profile")
 }
+
+// Search delivery only. Canonical owners never read these derived manifests.
+model SearchState {
+  id                String    @id
+  generation        BigInt    @default(1)
+  indexedGeneration BigInt    @default(0) @map("indexed_generation")
+  indexedAt         DateTime? @map("indexed_at") @db.Timestamptz(6)
+
+  @@map("search_state")
+}
+
+model SearchManifest {
+  namespace String @default("")
+  id        String @db.Uuid
+  type      String
+  hash      String
+
+  @@id([namespace, id])
+  @@map("search_manifest")
+}

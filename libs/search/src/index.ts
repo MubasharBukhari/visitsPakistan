@@ -18,3 +18,7 @@ export function createSearchProbe(
     close: async () => {},
   };
 }
+export * from './schema';
+export * from './client';
+export * from './indexer';
+export * from './service';

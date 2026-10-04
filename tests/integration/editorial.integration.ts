@@ -86,14 +86,15 @@ async function account(role: 'CONTRIBUTOR' | 'EDITOR' | 'ADMINISTRATOR') {
       mfaSecret: encryptMfa(secret, key),
     },
   });
+  const otp = await generate({ secret });
   const response = await request(app.getHttpServer())
     .post('/api/v1/admin/auth/login')
-    .send({ email: a.email, password, otp: await generate({ secret }) })
+    .send({ email: a.email, password, otp })
     .expect(201);
   return {
     actor: { id: a.id, displayName: a.displayName, roles: a.roles },
     token: response.body.token as string,
-    credentials: { email: a.email, password, otp: await generate({ secret }) },
+    credentials: { email: a.email, password, otp },
   };
 }
 async function create(

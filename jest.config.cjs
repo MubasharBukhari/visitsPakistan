@@ -11,6 +11,7 @@ module.exports = {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.base.json' }],
   },
   moduleNameMapper: {
+    '\\.(css)$': '<rootDir>/tools/jest-style.cjs',
     '^@visitspakistan/(.*)$': '<rootDir>/libs/$1/src/index',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },

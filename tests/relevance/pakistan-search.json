@@ -1,0 +1,405 @@
+[
+  {
+    "q": "Hunza",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "hunza valley",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "hunza wadi",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "ہنزہ",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Hunzah",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Huzna",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Hunza Valle",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "northern areas",
+    "expected": "hunza",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Skardu",
+    "expected": "skardu",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "سکردو",
+    "expected": "skardu",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Skardoo",
+    "expected": "skardu",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Skadu",
+    "expected": "skardu",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Lahore",
+    "expected": "lahore",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "لاہور",
+    "expected": "lahore",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Lahor",
+    "expected": "lahore",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Lahroe",
+    "expected": "lahore",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Islamabad",
+    "expected": "islamabad",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "اسلام آباد",
+    "expected": "islamabad",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Islamabd",
+    "expected": "islamabad",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Islmabad",
+    "expected": "islamabad",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Karachi",
+    "expected": "karachi",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "کراچی",
+    "expected": "karachi",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Karachii",
+    "expected": "karachi",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Swat",
+    "expected": "swat",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Swat Valley",
+    "expected": "swat",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "سوات",
+    "expected": "swat",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Chitral",
+    "expected": "chitral",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "چترال",
+    "expected": "chitral",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Chitrl",
+    "expected": "chitral",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Naran",
+    "expected": "naran",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Kaghan",
+    "expected": "naran",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Naran Kaghan",
+    "expected": "naran",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Murree",
+    "expected": "murree",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "مری",
+    "expected": "murree",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Muree",
+    "expected": "murree",
+    "type": "DESTINATION"
+  },
+  {
+    "q": "Attabad Lake",
+    "expected": "attabad",
+    "type": "PLACE"
+  },
+  {
+    "q": "Attabad Jheel",
+    "expected": "attabad",
+    "type": "PLACE"
+  },
+  {
+    "q": "عطا آباد جھیل",
+    "expected": "attabad",
+    "type": "PLACE"
+  },
+  {
+    "q": "Attabd Lake",
+    "expected": "attabad",
+    "type": "PLACE"
+  },
+  {
+    "q": "Baltit Fort",
+    "expected": "baltit",
+    "type": "PLACE"
+  },
+  {
+    "q": "Baltit",
+    "expected": "baltit",
+    "type": "PLACE"
+  },
+  {
+    "q": "Passu Cones",
+    "expected": "passu",
+    "type": "PLACE"
+  },
+  {
+    "q": "Passu Cathedral",
+    "expected": "passu",
+    "type": "PLACE"
+  },
+  {
+    "q": "Passu Cone",
+    "expected": "passu",
+    "type": "PLACE"
+  },
+  {
+    "q": "Deosai",
+    "expected": "deosai",
+    "type": "PLACE"
+  },
+  {
+    "q": "Deosai Plains",
+    "expected": "deosai",
+    "type": "PLACE"
+  },
+  {
+    "q": "Badshahi Mosque",
+    "expected": "badshahi",
+    "type": "PLACE"
+  },
+  {
+    "q": "بادشاہی مسجد",
+    "expected": "badshahi",
+    "type": "PLACE"
+  },
+  {
+    "q": "Lahore Fort",
+    "expected": "lahorefort",
+    "type": "PLACE"
+  },
+  {
+    "q": "Shahi Qila",
+    "expected": "lahorefort",
+    "type": "PLACE"
+  },
+  {
+    "q": "Faisal Mosque",
+    "expected": "faisal",
+    "type": "PLACE"
+  },
+  {
+    "q": "فیصل مسجد",
+    "expected": "faisal",
+    "type": "PLACE"
+  },
+  {
+    "q": "Margalla Hills",
+    "expected": "margalla",
+    "type": "PLACE"
+  },
+  {
+    "q": "Margalla trails",
+    "expected": "margalla",
+    "type": "PLACE"
+  },
+  {
+    "q": "Trekking",
+    "expected": "trekking",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Hiking",
+    "expected": "trekking",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "treking",
+    "expected": "trekking",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "پیدل سفر",
+    "expected": "trekking",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Boating",
+    "expected": "boating",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "boat",
+    "expected": "boating",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "boattng",
+    "expected": "boating",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "food",
+    "expected": "foodwalk",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "cuisine",
+    "expected": "foodwalk",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Food Walk",
+    "expected": "foodwalk",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Heritage Tour",
+    "expected": "heritage",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "family activities",
+    "expected": "heritage",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "historical",
+    "expected": "heritage",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "camping",
+    "expected": "camping",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "campsite",
+    "expected": "camping",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Photography",
+    "expected": "photography",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "photos",
+    "expected": "photography",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "skiing",
+    "expected": "skiing",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "sking",
+    "expected": "skiing",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Hun",
+    "expected": "hunza",
+    "type": "DESTINATION",
+    "autocomplete": true
+  },
+  {
+    "q": "Atta",
+    "expected": "attabad",
+    "type": "PLACE",
+    "autocomplete": true
+  },
+  {
+    "q": "Trek",
+    "expected": "trekking",
+    "type": "EXPERIENCE",
+    "autocomplete": true
+  },
+  {
+    "q": "Hunza trekking",
+    "expected": "trekking",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Lahore food",
+    "expected": "foodwalk",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Hunza photos",
+    "expected": "photography",
+    "type": "EXPERIENCE"
+  },
+  {
+    "q": "Hunza family activities",
+    "expected": "attabad",
+    "type": "PLACE"
+  }
+]

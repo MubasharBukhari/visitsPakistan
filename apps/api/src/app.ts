@@ -22,6 +22,7 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { searchModule } from './search';
 import { discoveryModule } from './discovery';
 import { cmsModule, CmsErrorFilter } from './cms';
 import { destinationsModule } from './destinations';
@@ -146,6 +147,7 @@ export async function createApplication(
       cmsModule(config),
       destinationsModule(config),
       discoveryModule(config),
+      searchModule(config),
     ],
     controllers: [HealthController],
     providers: [

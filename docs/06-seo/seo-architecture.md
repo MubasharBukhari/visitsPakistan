@@ -57,3 +57,7 @@ OpenSearch document → refresh affected sitemap/internal-link caches.
 Organic landing sessions, engaged organic sessions, indexed quality
 pages, query clusters, search CTR, identifiable AI referrals,
 content-to-product progression and commercial actions.
+
+## Sprint 3 unified search
+
+[ADR-0019](../adr/0019-derived-unified-search.md) and [search development/contracts](../development/search.md) define the implemented OpenSearch aliases, durable PostgreSQL change marker/manifests, current eligibility filtering, grouped `/api/v1/search`, autocomplete and SSR/noindex search page. PostgreSQL remains canonical; commercial/future families are not indexed.

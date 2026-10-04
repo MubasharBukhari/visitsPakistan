@@ -1,3 +1,4 @@
+import GlobalSearch from './global-search';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
@@ -62,6 +63,7 @@ export default async function PublicDiscoveryLayout({
             Things to do
           </Link>
         </nav>
+        <GlobalSearch />
       </header>
       {children}
       <footer className="destination-footer">

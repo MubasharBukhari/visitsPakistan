@@ -8,6 +8,7 @@ RUN npm install --global pnpm@10.29.2
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm nx run api:build
+RUN pnpm nx run search:build
 
 FROM node:22.20.0-bookworm-slim AS runtime
 ENV NODE_ENV=production
@@ -16,6 +17,7 @@ ENV API_HOST=0.0.0.0
 ENV API_PORT=4000
 COPY --from=build --chown=node:node /workspace/node_modules ./node_modules
 COPY --from=build --chown=node:node /workspace/dist/apps/api ./dist/apps/api
+COPY --from=build --chown=node:node /workspace/dist/tools/search-index.cjs ./dist/tools/search-index.cjs
 RUN mkdir -p /workspace/.data/media && chown -R node:node /workspace/.data
 USER node
 EXPOSE 4000

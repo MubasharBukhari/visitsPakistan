@@ -17,8 +17,8 @@
     "test": "nx run-many -t test",
     "test:integration": "nx run testing:integration",
     "build": "nx run-many -t build --parallel=2",
-    "format": "prettier --write apps libs tools tests *.json *.mjs *.cjs *.ts *.yml .github docs/development docs/02-architecture/sprint-0-plan.md docs/adr/001[2345678]-*.md docs/02-architecture/canonical-graph-plan.md docs/02-architecture/cms-implementation-plan.md docs/02-architecture/destination-implementation-plan.md docs/02-architecture/sprint-1-plan.md docs/02-architecture/sprint-2-plan.md",
-    "format:check": "prettier --check apps libs tools tests *.json *.mjs *.cjs *.ts *.yml .github docs/development docs/02-architecture/sprint-0-plan.md docs/adr/001[2345678]-*.md docs/02-architecture/canonical-graph-plan.md docs/02-architecture/cms-implementation-plan.md docs/02-architecture/destination-implementation-plan.md docs/02-architecture/sprint-1-plan.md docs/02-architecture/sprint-2-plan.md",
+    "format": "prettier --write apps libs tools tests *.json *.mjs *.cjs *.ts *.yml .github docs/development docs/02-architecture/sprint-0-plan.md docs/adr/001[23456789]-*.md docs/02-architecture/canonical-graph-plan.md docs/02-architecture/cms-implementation-plan.md docs/02-architecture/destination-implementation-plan.md docs/02-architecture/sprint-1-plan.md docs/02-architecture/sprint-2-plan.md docs/02-architecture/sprint-3-plan.md",
+    "format:check": "prettier --check apps libs tools tests *.json *.mjs *.cjs *.ts *.yml .github docs/development docs/02-architecture/sprint-0-plan.md docs/adr/001[23456789]-*.md docs/02-architecture/canonical-graph-plan.md docs/02-architecture/cms-implementation-plan.md docs/02-architecture/destination-implementation-plan.md docs/02-architecture/sprint-1-plan.md docs/02-architecture/sprint-2-plan.md docs/02-architecture/sprint-3-plan.md",
     "db:generate": "prisma generate",
     "db:migrate": "tsx tools/migrate.ts",
     "db:migrate:test": "tsx tools/migrate-test.ts",
@@ -28,7 +28,13 @@
     "db:seed": "tsx tools/seed.ts",
     "cms:bootstrap": "tsx tools/cms-bootstrap.ts",
     "destinations:preview": "tsx tools/destination-preview.ts",
-    "discovery:preview": "tsx tools/discovery-preview.ts"
+    "discovery:preview": "tsx tools/discovery-preview.ts",
+    "search:sync": "tsx tools/search-index.ts sync",
+    "search:reindex": "tsx tools/search-index.ts rebuild",
+    "search:reconcile": "tsx tools/search-index.ts reconcile",
+    "search:worker": "tsx tools/search-index.ts worker",
+    "search:status": "tsx tools/search-index.ts status",
+    "search:preview": "tsx tools/search-preview.ts"
   },
   "dependencies": {
     "@fontsource/playfair-display": "5.3.0",

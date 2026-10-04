@@ -122,3 +122,11 @@ CMS content references canonical registry UUIDs; it cannot edit geographic coord
 ## Implemented destination vertical
 
 DestinationProfile references a DESTINATION or CITY GeoEntity UUID and owns sourced discovery interest/season facets. Geography retains identity, hierarchy, coordinates and canonical publication. The public Destinations reader composes canonical fields, eligible graph relations and published Content queries in a repeatable-read transaction. [ADR-0016](../adr/0016-destination-discovery-profiles.md) and [destination development](../development/destinations.md) define the contract. No partner/product/route/itinerary owner tables are introduced; structured collections remain empty and editorial guides are separate.
+
+## Implemented attraction and experience discovery
+
+Discovery composes read-only Places, Experiences, Destinations and Content queries in the modular monolith; it does not take write ownership from the canonical modules. Rich optional Place facts and independent Experience concepts remain in PostgreSQL, with PostGIS point authority. Content owns ATTRACTION_EDITORIAL/EXPERIENCE_EDITORIAL presentation referencing canonical UUIDs. Eligibility and source checks apply independently to owners, edges and snapshots. Public destination links and discovery filters derive from approved knowledge graph paths. See [ADR-0018](../adr/0018-attraction-experience-discovery.md) and [discovery development](../development/discovery.md).
+
+## Sprint 3 unified search
+
+[ADR-0019](../adr/0019-derived-unified-search.md) and [search development/contracts](../development/search.md) define the implemented OpenSearch aliases, durable PostgreSQL change marker/manifests, current eligibility filtering, grouped `/api/v1/search`, autocomplete and SSR/noindex search page. PostgreSQL remains canonical; commercial/future families are not indexed.

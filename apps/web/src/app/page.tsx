@@ -1,3 +1,4 @@
+import GlobalSearch from '../components/global-search';
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { brandTokens } from '@visitspakistan/domain';
@@ -50,6 +51,7 @@ export default async function Home() {
         <a href="/destinations/" className="home-button">
           Explore destinations ↗
         </a>
+        <GlobalSearch />
       </main>
       <footer>VisitsPakistan · Discover. Experience.</footer>
     </div>

@@ -84,3 +84,5 @@ The graph service/repository remains the canonical authority; the CMS references
 `pnpm test` includes domain service tests. `pnpm test:integration` includes real Prisma/PostGIS repository tests, rollback/constraint checks, meter-based proximity, all hierarchy tiers and seed idempotency. Tests use only the isolated `_test` database: random test records roll back, while deterministic draft seed fixtures remain there. Controlled SQL checks/triggers/spatial indexes must be preserved when generating later migrations. See [ADR-0014](../adr/0014-canonical-graph-storage.md).
 
 Sprint 2 attraction/experience setup, API filters and isolated browser preview: [Discovery development](discovery.md). Run `pnpm cms:bootstrap` after migrations/seeding to add the Experience editorial template assignment without replacing existing assignments.
+
+Sprint 3: see [unified search](search.md). After migrations run `pnpm search:reindex`, then keep `pnpm search:worker` running with API/web. Inspect `pnpm search:status` for delivery lag.

@@ -71,6 +71,7 @@ test('healthy dependencies and generated OpenAPI agree on platform routes', asyn
       '/api/v1/places/{slug}',
       '/api/v1/experiences/{slug}',
       '/api/v1/things-to-do',
+      '/api/v1/search',
       '/api/v1/destinations',
       '/api/v1/destinations/{slug}',
       '/v1/destinations',

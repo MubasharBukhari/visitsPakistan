@@ -19,9 +19,24 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc -p libs/search/tsconfig.lib.json"
+        "command": "tsc -p libs/search/tsconfig.lib.json && node tools/build-search.mjs"
       },
-      "outputs": ["{workspaceRoot}/dist/libs/search"]
+      "outputs": [
+        "{workspaceRoot}/dist/libs/search",
+        "{workspaceRoot}/dist/tools/search-index.cjs"
+      ],
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/tools/build-search.mjs",
+        "{workspaceRoot}/tools/search-index.ts"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "jest --runInBand --testPathPattern=libs/search"
+      }
     }
   }
 }

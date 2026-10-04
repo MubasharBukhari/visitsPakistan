@@ -16,6 +16,15 @@ const schema = z.object({
   OPENSEARCH_URL: z
     .url()
     .refine((value) => ['http:', 'https:'].includes(new URL(value).protocol)),
+  OPENSEARCH_INDEX_URL: z
+    .url()
+    .refine((value) => ['http:', 'https:'].includes(new URL(value).protocol))
+    .optional(),
+  SEARCH_INDEX_PREFIX: z
+    .string()
+    .regex(/^[a-z0-9_]*$/)
+    .max(40)
+    .default(''),
   API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   API_HOST: z.string().default('127.0.0.1'),
   WEB_ORIGIN: z.url(),

@@ -41,3 +41,6 @@ export { Prisma } from './generated/client';
 export * from './destination-reader';
 
 export * from './discovery-reader';
+export * from './search-projection';
+
+export type { PrismaClient } from './generated/client';

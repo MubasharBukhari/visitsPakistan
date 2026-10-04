@@ -13,3 +13,4 @@ export * from './editorial';
 export * from './destinations';
 
 export * from './discovery';
+export * from './search';

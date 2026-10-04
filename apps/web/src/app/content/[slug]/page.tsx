@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import GlobalSearch from '../../../components/global-search';
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import type { Metadata } from 'next';
@@ -153,6 +154,9 @@ export default async function EditorialPage({
         </a>
         <span>Discover · Experience</span>
       </header>
+      <div className="story-shell">
+        <GlobalSearch />
+      </div>
       <main className="story-shell">
         <nav aria-label="Breadcrumb">
           <a href="/">Home</a>

@@ -22,3 +22,5 @@ Date: 2026-10-02. Next.js, initial PostgreSQL storage and RBAC are owner-confirm
 | [0014](0014-canonical-graph-storage.md) | Typed UUID knowledge graph, ordered geography, provenance and PostGIS | Accepted; implements registry contract and canonical foundation |
 
 Future significant changes require a new or superseding ADR identifying context, decision, alternatives, consequences, validation and review trigger. Implementation must not silently change these boundaries.
+
+Sprint 3: [ADR-0019](0019-derived-unified-search.md) — derived unified search with versioned aliases, coalesced durable delivery and canonical eligibility filtering (Accepted).
