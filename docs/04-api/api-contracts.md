@@ -64,3 +64,5 @@ for the permission matrix, session policies and quote decision constraints.
 ## Sprint 3 unified search
 
 [ADR-0019](../adr/0019-derived-unified-search.md) and [search development/contracts](../development/search.md) define the implemented OpenSearch aliases, durable PostgreSQL change marker/manifests, current eligibility filtering, grouped `/api/v1/search`, autocomplete and SSR/noindex search page. PostgreSQL remains canonical; commercial/future families are not indexed.
+
+Staff recovery adds anonymous `POST /api/v1/admin/auth/forgot-password` (email, generic 202) and `POST /api/v1/admin/auth/reset-password` (token, password, fresh OTP, 200). Reset consumes a 15-minute single-use token and revokes all sessions. See [CMS recovery](../development/editorial-cms.md) and Swagger for validation/throttling details.

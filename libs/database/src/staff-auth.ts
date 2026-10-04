@@ -52,6 +52,7 @@ export class StaffAuth {
         where: {
           id: account.id,
           active: true,
+          passwordHash: account.passwordHash,
           OR: [{ lastMfaStep: null }, { lastMfaStep: { lt: step! } }],
         },
         data: { lastMfaStep: step, failedLogins: 0, lockedUntil: null },

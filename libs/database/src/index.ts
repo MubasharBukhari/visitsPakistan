@@ -44,3 +44,4 @@ export * from './discovery-reader';
 export * from './search-projection';
 
 export type { PrismaClient } from './generated/client';
+export { StaffPasswordRecovery, type RecoveryDelivery } from './staff-recovery';

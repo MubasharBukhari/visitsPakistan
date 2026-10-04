@@ -1,6 +1,7 @@
 'use client';
 import { useState, type FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { IconArrowRight, IconShieldLock } from '@tabler/icons-react';
 export function LoginForm() {
   const [error, setError] = useState('');
@@ -99,6 +100,9 @@ export function LoginForm() {
               <IconArrowRight size={18} />
             </button>
           </form>
+          <p>
+            <Link href="/forgot-password/">Forgot password?</Link>
+          </p>
           <p className="login-note">
             Access is invitation only. Contact your platform administrator if
             you need an account.

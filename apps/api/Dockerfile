@@ -18,7 +18,7 @@ ENV API_PORT=4000
 COPY --from=build --chown=node:node /workspace/node_modules ./node_modules
 COPY --from=build --chown=node:node /workspace/dist/apps/api ./dist/apps/api
 COPY --from=build --chown=node:node /workspace/dist/tools/search-index.cjs ./dist/tools/search-index.cjs
-RUN mkdir -p /workspace/.data/media && chown -R node:node /workspace/.data
+RUN mkdir -p /workspace/.data/media /workspace/.data/staff-recovery && chmod 700 /workspace/.data/staff-recovery && chown -R node:node /workspace/.data
 USER node
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s CMD node -e "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

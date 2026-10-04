@@ -130,3 +130,5 @@ Discovery composes read-only Places, Experiences, Destinations and Content queri
 ## Sprint 3 unified search
 
 [ADR-0019](../adr/0019-derived-unified-search.md) and [search development/contracts](../development/search.md) define the implemented OpenSearch aliases, durable PostgreSQL change marker/manifests, current eligibility filtering, grouped `/api/v1/search`, autocomplete and SSR/noindex search page. PostgreSQL remains canonical; commercial/future families are not indexed.
+
+Staff authentication owns password recovery proofs, the encrypted delivery queue and atomic session revocation. CMS owns recovery forms and origin-checked BFF routes; SMTP/private local messages are adapters. See [ADR-0020](../adr/0020-staff-password-recovery.md). Canonical travel modules do not depend on recovery storage.

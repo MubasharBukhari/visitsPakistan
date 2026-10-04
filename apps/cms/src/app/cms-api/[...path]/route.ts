@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 const allowed =
-  /^(auth\/(login|logout|me)|content(\/[0-9a-f-]{36}(\/actions)?)?|references|sources|themes|templates|presentation|media(\/[0-9a-f-]{36}\/content)?)$/;
+  /^(auth\/(login|logout|me|forgot-password|reset-password)|content(\/[0-9a-f-]{36}(\/actions)?)?|references|sources|themes|templates|presentation|media(\/[0-9a-f-]{36}\/content)?)$/;
 async function proxy(
   req: NextRequest,
   ctx: { params: Promise<{ path: string[] }> },
@@ -17,7 +17,12 @@ async function proxy(
     );
   const jar = await cookies();
   const token = jar.get('vp_staff')?.value;
-  if (path !== 'auth/login' && !token)
+  if (
+    !['auth/login', 'auth/forgot-password', 'auth/reset-password'].includes(
+      path,
+    ) &&
+    !token
+  )
     return NextResponse.json(
       { message: 'Staff sign-in required' },
       { status: 401 },

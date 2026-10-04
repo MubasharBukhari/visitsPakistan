@@ -1,3 +1,4 @@
+import { recoveryDelivery } from './recovery-delivery';
 import {
   Body,
   Controller,
@@ -21,6 +22,8 @@ import {
   type ExceptionFilter,
   type ArgumentsHost,
   HttpException,
+  Header,
+  HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -42,6 +45,7 @@ import {
   createGraphClient,
   EditorialStore,
   StaffAuth,
+  StaffPasswordRecovery,
   MediaStore,
   Prisma,
 } from '@visitspakistan/database';
@@ -49,6 +53,7 @@ import { databaseUrl, type ServerConfig } from '@visitspakistan/config';
 const AUTH = Symbol('STAFF_AUTH');
 const STORE = Symbol('EDITORIAL_STORE');
 const MEDIA = Symbol('MEDIA_STORE');
+const RECOVERY = Symbol('STAFF_RECOVERY');
 const KEY = Symbol('MFA_KEY');
 type StaffRequest = Request & { actor: CmsActor };
 const bearer = (req: Request) =>
@@ -99,6 +104,7 @@ class AuthController {
   private attempts = new Map<string, { count: number; expires: number }>();
   constructor(
     @Inject(AUTH) private readonly auth: StaffAuth,
+    @Inject(RECOVERY) private readonly recovery: StaffPasswordRecovery,
     @Inject(KEY) private readonly key: string | undefined,
   ) {}
   @Post('login')
@@ -139,6 +145,81 @@ class AuthController {
       .strict()
       .parse(body);
     return this.auth.login(data.email, data.password, data.otp);
+  }
+  private recoveryAttempts = new Map<
+    string,
+    { count: number; expires: number }
+  >();
+  private limitRecovery(req: Request) {
+    if (!this.key)
+      throw new EditorialError(503, 'Password recovery is not configured');
+    const id = req.ip ?? 'unknown',
+      now = Date.now(),
+      previous = this.recoveryAttempts.get(id);
+    if (previous && previous.expires > now && previous.count >= 10)
+      throw new EditorialError(429, 'Try password recovery again later');
+    if (this.recoveryAttempts.size > 1000)
+      this.recoveryAttempts.delete(this.recoveryAttempts.keys().next().value!);
+    this.recoveryAttempts.set(id, {
+      count: previous && previous.expires > now ? previous.count + 1 : 1,
+      expires:
+        previous && previous.expires > now ? previous.expires : now + 60000,
+    });
+  }
+  @Post('forgot-password')
+  @HttpCode(202)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    summary: 'Request a single-use password recovery link; generic response',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email'],
+      properties: { email: { type: 'string', format: 'email' } },
+    },
+  })
+  async forgot(@Req() req: Request, @Body() body: unknown) {
+    this.limitRecovery(req);
+    const data = z
+      .object({ email: z.email().max(200) })
+      .strict()
+      .parse(body);
+    return this.recovery.request(data.email);
+  }
+  @Post('reset-password')
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    summary: 'Consume recovery token and fresh TOTP; revoke all sessions',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['token', 'password', 'otp'],
+      properties: {
+        token: { type: 'string' },
+        password: {
+          type: 'string',
+          format: 'password',
+          minLength: 12,
+          maxLength: 128,
+        },
+        otp: { type: 'string', pattern: '^\\d{6}$' },
+      },
+    },
+  })
+  async resetPassword(@Req() req: Request, @Body() body: unknown) {
+    this.limitRecovery(req);
+    const data = z
+      .object({
+        token: z.string().regex(/^[a-zA-Z0-9_-]{43}$/),
+        password: z.string().min(12).max(128),
+        otp: z.string().regex(/^\d{6}$/),
+      })
+      .strict()
+      .parse(body);
+    return this.recovery.reset(data.token, data.password, data.otp);
   }
   @Get('me') @UseGuards(StaffGuard) @ApiBearerAuth() me(
     @Req() req: StaffRequest,
@@ -336,6 +417,14 @@ export function cmsModule(config: ServerConfig) {
     controllers: [AuthController, CmsController, PublicContentController],
     providers: [
       StaffGuard,
+      {
+        provide: RECOVERY,
+        useValue: new StaffPasswordRecovery(
+          db,
+          config.CMS_MFA_KEY ?? '0'.repeat(64),
+          config.CMS_MFA_KEY ? recoveryDelivery(config) : undefined,
+        ),
+      },
       { provide: STORE, useValue: store },
       {
         provide: AUTH,

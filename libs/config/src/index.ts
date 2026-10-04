@@ -40,6 +40,12 @@ const schema = z.object({
     .string()
     .regex(/^[0-9a-f]{64}$/i)
     .optional(),
+  PASSWORD_RESET_DIR: z.string().default('.data/staff-recovery'),
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+  SMTP_FROM: z.email().optional(),
   MEDIA_ROOT: z.string().default('.data/media'),
   DATABASE_URL: z.preprocess(
     (value) => (value === '' ? undefined : value),
